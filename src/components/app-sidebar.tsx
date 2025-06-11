@@ -35,36 +35,16 @@ import {
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "Design by Cua",
+    email: "Contact @otis_cua",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
     {
-      title: "Dashboard",
+      title: "My short links",
       url: "#",
       icon: IconDashboard,
-    },
-    {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
-    },
+    }
   ],
   navClouds: [
     {
@@ -133,19 +113,24 @@ const data = {
   ],
   documents: [
     {
-      name: "Data Library",
+      name: "Privacy policy",
       url: "#",
       icon: IconDatabase,
     },
     {
-      name: "Reports",
+      name: "Terms of service",
       url: "#",
       icon: IconReport,
     },
     {
-      name: "Word Assistant",
+      name: "Contact us",
       url: "#",
       icon: IconFileWord,
+    },
+    {
+      name: "Abuse report",
+      url: "#",
+      icon: IconUsers,
     },
   ],
 }
@@ -162,7 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">Url Shortener</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -171,7 +156,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
