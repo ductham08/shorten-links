@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 import { ReactNode } from "react"
 import './globals.css'
 import '../styles/globals.scss'
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             disableTransitionOnChange
           >
             {children}
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>
