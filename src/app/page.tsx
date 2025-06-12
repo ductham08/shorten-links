@@ -75,7 +75,7 @@ export default function Page() {
         >
             <AppSidebar variant="inset" />
             <SidebarInset>
-                <SiteHeader path="Home" />
+                <SiteHeader path="Shortener Url" />
                 <div className="flex flex-1 flex-col">
                     <div className="@container/main flex flex-1 flex-col gap-2">
                         <div className="p-4">
