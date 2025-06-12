@@ -8,6 +8,11 @@ type RootLayoutProps = {
   children: ReactNode
 }
 
+export const metadata = {
+  title: "Shortener Url",
+  description: "Shortener Url",
+}
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <>

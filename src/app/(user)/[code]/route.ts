@@ -1,31 +1,29 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Url from "@/models/Url";
 
-export async function GET(
-    request: Request,
-    { params }: { params: { code: string } }
-) {
-    try {
-        const { code } = params;
-        
-        await connectDB();
-        
-        const url = await Url.findOne({ code });
+export async function GET(request: NextRequest) {
+  // Lấy code từ URL
+  const urlParts = request.nextUrl.pathname.split("/");
+  const code = urlParts[urlParts.length - 1];
 
-        if (!url) {
-            return NextResponse.json(
-                { error: "URL not found" },
-                { status: 404 }
-            );
-        }
+  try {
+    await connectDB();
+    const url = await Url.findOne({ code });
 
-        return NextResponse.redirect(url.longUrl);
-    } catch (error) {
-        console.error('Error:', error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+    if (!url) {
+      return NextResponse.json(
+        { error: "URL not found" },
+        { status: 404 }
+      );
     }
-} 
+
+    return NextResponse.redirect(url.longUrl);
+  } catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
