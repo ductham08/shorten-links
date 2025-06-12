@@ -16,4 +16,4 @@ const urlSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Url || mongoose.model('Url', urlSchema); 
+export default mongoose.models.Url || mongoose.model('Url', urlSchema, 'shortener-url'); 

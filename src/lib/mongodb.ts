@@ -7,11 +7,11 @@ declare global {
   };
 }
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MONGODB_URI to .env.local');
+if (!process.env.MONGODB_URL) {
+  throw new Error('Please add your MONGODB_URL to .env.local');
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URL = process.env.MONGODB_URL;
 
 let cached = global.mongoose;
 
@@ -29,7 +29,7 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URL, opts).then((mongoose) => {
       return mongoose;
     });
   }
