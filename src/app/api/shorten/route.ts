@@ -9,7 +9,7 @@ const urlMap = new Map<string, string>();
 
 export async function POST(request: Request) {
     try {
-        const { longUrl } = await request.json();
+        const { longUrl, alias } = await request.json();
 
         if (!longUrl) {
             return NextResponse.json(
@@ -45,9 +45,20 @@ export async function POST(request: Request) {
 
         await connectDB();
 
-        // Tạo short code
-        const shortCode = nanoid(6);
-        
+        // Xử lý alias
+        let shortCode = alias && alias.trim() !== "" ? alias.trim() : nanoid(6);
+
+        // Nếu có alias, kiểm tra trùng
+        if (alias && alias.trim() !== "") {
+            const existed = await Url.findOne({ code: shortCode });
+            if (existed) {
+                return NextResponse.json(
+                    { error: "Alias already exists, please choose another one." },
+                    { status: 400 }
+                );
+            }
+        }
+
         // Lưu vào database
         await Url.create({
             code: shortCode,

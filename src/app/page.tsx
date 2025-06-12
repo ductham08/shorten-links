@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
     SidebarInset,
     SidebarProvider,
@@ -15,6 +16,7 @@ export default function Page() {
     const [url, setUrl] = useState("")
     const [shortUrl, setShortUrl] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const [alias, setAlias] = useState("")
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -26,7 +28,7 @@ export default function Page() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ longUrl: url }),
+                body: JSON.stringify({ longUrl: url, alias }),
             })
 
             const data = await response.json()
@@ -79,22 +81,41 @@ export default function Page() {
                 <div className="flex flex-1 flex-col">
                     <div className="@container/main flex flex-1 flex-col gap-2">
                         <div className="p-4">
-                            <form onSubmit={handleSubmit} className="flex w-full max-w-sm items-center gap-2">
-                                <Input
-                                    type="text"
-                                    placeholder="Enter your url"
-                                    className="focus-visible:ring-0"
-                                    value={url}
-                                    onChange={(e) => setUrl(e.target.value)}
-                                    required
-                                />
-                                <Button
-                                    type="submit"
-                                    variant="outline"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? "Shortening..." : "Shorten"}
-                                </Button>
+                            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+                                <div className="w-full max-w-sm flex flex-col gap-2">
+                                    <Label htmlFor="url">Long Url</Label>
+                                    <Input
+                                        id="url"
+                                        type="text"
+                                        placeholder="Enter long url"
+                                        className="focus-visible:ring-0"
+                                        value={url}
+                                        onChange={(e) => setUrl(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex items-end w-full max-w-sm place-content-between gap-2">
+                                    <div className="w-full flex flex-col gap-2">
+                                        <Label htmlFor="alias">Custom Alias (Optional)</Label>
+                                        <Input
+                                            id="alias"
+                                            type="text"
+                                            placeholder="Custom alias"
+                                            className="focus-visible:ring-0"
+                                            value={alias}
+                                            onChange={(e) => setAlias(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <Button
+                                        type="submit"
+                                        variant="outline"
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? "Shortening..." : "Shorten"}
+                                    </Button>
+                                </div>
                             </form>
 
                             {shortUrl && (
