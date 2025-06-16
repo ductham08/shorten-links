@@ -45,10 +45,8 @@ export async function POST(request: Request) {
 
         await connectDB();
 
-        // Xử lý alias
         let shortCode = alias && alias.trim() !== "" ? alias.trim() : nanoid(6);
 
-        // Nếu có alias, kiểm tra trùng
         if (alias && alias.trim() !== "") {
             const existed = await Url.findOne({ code: shortCode });
             if (existed) {
@@ -59,7 +57,6 @@ export async function POST(request: Request) {
             }
         }
 
-        // Lưu vào database
         await Url.create({
             code: shortCode,
             longUrl: longUrl,
