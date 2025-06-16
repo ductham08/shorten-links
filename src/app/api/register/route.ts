@@ -1,0 +1,58 @@
+import { NextResponse } from 'next/server'
+import User from '@/models/User'
+import mongoose from 'mongoose'
+import bcrypt from 'bcryptjs'
+
+export async function POST(req: Request) {
+    try {
+        const { telegram, username, password } = await req.json()
+
+        // Validate input
+        if (!telegram || !username || !password) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+        }
+
+        // Connect to MongoDB if not already
+        if (mongoose.connection.readyState === 0) {
+            await mongoose.connect(process.env.MONGODB_URI!)
+        }
+
+        // Check if username exists
+        const existingUser = await User.findOne({ username })
+        if (existingUser) {
+            return NextResponse.json({ error: 'Username already exists' }, { status: 409 })
+        }
+
+        // Check if telegram exists
+        const existingTelegram = await User.findOne({ telegram })
+        if (existingTelegram) {
+            return NextResponse.json({ error: 'Telegram account already exists' }, { status: 409 })
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        // Create user
+        const user = new User({
+            telegram,
+            username,
+            password: hashedPassword,
+            role: 'user',
+            plan: {
+                type: 'basic',
+                totalLinks: 70,
+                usedLinks: 0,
+                registeredAt: new Date(),
+                updatedAt: new Date(),
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        })
+
+        await user.save()
+
+        return NextResponse.json({ message: 'User registered successfully' }, { status: 201 })
+    } catch (err) {
+        return NextResponse.json({ error: 'Server error', detail: String(err) }, { status: 500 })
+    }
+}
