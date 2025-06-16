@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import User from '@/models/User'
-import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
+import connectDB from '@/lib/mongodb'
 
 export async function POST(req: Request) {
     try {
@@ -22,10 +22,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid username format' }, { status: 400 })
         }
 
-        // Connect to MongoDB if not already
-        if (mongoose.connection.readyState === 0) {
-            await mongoose.connect(process.env.MONGODB_URI!)
-        }
+        await connectDB()
 
         // Check if username exists
         const existingUser = await User.findOne({ username })

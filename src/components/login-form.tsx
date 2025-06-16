@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,11 +11,65 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "./ui/password-input"
+import { useState } from "react"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [identifier, setIdentifier] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [identifierError, setIdentifierError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [generalError, setGeneralError] = useState("")
+  const [success, setSuccess] = useState("")
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIdentifierError("")
+    setPasswordError("")
+    setGeneralError("")
+    setSuccess("")
+
+    if (!identifier) {
+      setIdentifierError("Username or Telegram is required")
+      return
+    }
+    if (!password) {
+      setPasswordError("Password is required")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, password })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        if (data.error) {
+          if (data.error.toLowerCase().includes("telegram") || data.error.toLowerCase().includes("username") || data.error.toLowerCase().includes("account")) setIdentifierError(data.error)
+          else if (data.error.toLowerCase().includes("password")) setPasswordError(data.error)
+          else setGeneralError(data.error)
+        } else {
+          setGeneralError("Login failed")
+        }
+      } else {
+        setSuccess("Login successful!")
+        setIdentifier("")
+        setPassword("")
+      }
+    } catch (err) {
+      setGeneralError("Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -21,42 +77,49 @@ export function LoginForm({
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
+            {generalError && <p className="text-sm text-red-500 text-left my-2">{generalError}</p>}
+            {success && <p className="text-sm text-green-600 text-left my-2">{success}</p>}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="user-name">User name / Telegram account</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
+                  id="user-name"
+                  type="text"
+                  placeholder="example / @example"
                   required
                   className="focus-visible:ring-0"
+                  value={identifier}
+                  onChange={e => setIdentifier(e.target.value)}
                 />
+                {identifierError && <p className="text-sm text-red-500 mt-1">{identifierError}</p>}
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  {/* <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a> */}
                 </div>
-                <Input id="password" type="password" className="focus-visible:ring-0" required />
+                <PasswordInput
+                  id="password"
+                  autoComplete="password"
+                  className="focus-visible:ring-0"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                {passwordError && <p className="text-sm text-red-500 mt-1">{passwordError}</p>}
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  Login
+                <Button type="submit" className="w-full cursor-pointer" disabled={loading}>
+                  {loading ? "Logging in..." : "Login"}
                 </Button>
               </div>
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a href="/register" className="underline underline-offset-4">
+              <a href="/register">
                 Sign up
               </a>
             </div>

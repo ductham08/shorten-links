@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose, { Mongoose } from 'mongoose';
 
 declare global {
   var mongoose: {
-    conn: typeof import("mongoose") | null;
-    promise: Promise<typeof import("mongoose")> | null;
+    conn: Mongoose | null;
+    promise: Promise<Mongoose> | null;
   } | undefined;
 }
 
@@ -13,32 +13,40 @@ if (!process.env.MONGODB_URL) {
 
 const MONGODB_URL = process.env.MONGODB_URL;
 
-let cached = global.mongoose;
+// Đảm bảo biến cached luôn tồn tại
+if (!global.mongoose) {
+  global.mongoose = { conn: null, promise: null };
+}
 
 async function connectDB() {
-  if (!cached) {
-    cached = global.mongoose = { conn: null, promise: null };
-  }
-
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-    cached.promise = mongoose.connect(MONGODB_URL, opts);
-  }
-
   try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
+    if (global.mongoose?.conn) {
+      return global.mongoose.conn;
+    }
 
-  return cached.conn;
+    if (!global.mongoose?.promise) {
+      const opts = {
+        bufferCommands: false,
+      };
+
+      const promise = mongoose.connect(MONGODB_URL, opts);
+      if (global.mongoose) {
+        global.mongoose.promise = promise;
+      }
+    }
+
+    const conn = await global.mongoose?.promise;
+    if (global.mongoose && conn) {
+      global.mongoose.conn = conn;
+    }
+
+    return global.mongoose?.conn;
+  } catch (error) {
+    if (global.mongoose) {
+      global.mongoose.promise = null;
+    }
+    throw error;
+  }
 }
 
 export default connectDB; 
