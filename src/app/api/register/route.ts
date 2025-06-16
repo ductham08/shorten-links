@@ -12,6 +12,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
         }
 
+        // Validate telegram: must start with @, only a-zA-Z0-9_ after @, at least 2 chars after @
+        if (!/^@[a-zA-Z0-9_]{2,}$/.test(telegram)) {
+            return NextResponse.json({ error: 'Invalid Telegram account format' }, { status: 400 })
+        }
+
+        // Validate username: only a-zA-Z0-9_
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            return NextResponse.json({ error: 'Invalid username format' }, { status: 400 })
+        }
+
         // Connect to MongoDB if not already
         if (mongoose.connection.readyState === 0) {
             await mongoose.connect(process.env.MONGODB_URI!)
@@ -51,7 +61,7 @@ export async function POST(req: Request) {
 
         await user.save()
 
-        return NextResponse.json({ message: 'User registered successfully' }, { status: 201 })
+        return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 })
     } catch (err) {
         return NextResponse.json({ error: 'Server error', detail: String(err) }, { status: 500 })
     }
