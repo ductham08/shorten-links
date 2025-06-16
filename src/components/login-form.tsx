@@ -13,11 +13,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordInput } from "./ui/password-input"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter()
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -59,9 +61,11 @@ export function LoginForm({
           setGeneralError("Login failed")
         }
       } else {
-        setSuccess("Login successful!")
+        setSuccess("Login successful! Redirecting...")
         setIdentifier("")
         setPassword("")
+        router.push(data.redirectTo || '/')
+        router.refresh()
       }
     } catch (err) {
       setGeneralError("Something went wrong. Please try again.")
