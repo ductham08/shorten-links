@@ -124,7 +124,6 @@ export default function Page() {
                                         type="text"
                                         value={shortUrl}
                                         readOnly
-                                        className="focus-visible:ring-0"
                                         disabled
                                     />
                                     <Button
