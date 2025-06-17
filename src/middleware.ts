@@ -18,10 +18,9 @@ export async function middleware(request: NextRequest) {
   // No token, redirect to login
   if (!token) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Unauthorized - No token' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized - Please login to continue' }, { status: 401 })
     }
     const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('from', request.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
   }
 

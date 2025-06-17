@@ -9,6 +9,7 @@ import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
+import { NextResponse } from "next/server"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -33,8 +34,17 @@ export default function Page() {
 
             const data = await response.json()
 
-            if (!response.ok) {
-                throw new Error(data.error || "Something went wrong")
+            if (response.status === 401) {
+                toast.error(data.error, {
+                    duration: 1000,
+                    position: "top-right"
+                })
+
+                setTimeout(() => {
+                    window.location.href = "/login"
+                }, 1000)
+
+                return
             }
 
             setShortUrl(data.shortUrl)

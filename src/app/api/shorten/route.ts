@@ -40,7 +40,7 @@ export async function POST(request: Request) {
             description = $('meta[name="description"]').attr("content") || "";
             thumbnail = $('meta[property="og:image"]').attr("content") || $('meta[name="twitter:image"]').attr("content") || "";
         } catch (err) {
-            console.log("Không lấy được meta:", err);
+            console.log("Not found meta:", err);
         }
 
         await connectDB();
