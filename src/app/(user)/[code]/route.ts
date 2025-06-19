@@ -54,6 +54,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
+    // Increment clicks count
+    await Url.findOneAndUpdate(
+      { code },
+      { $inc: { clicks: 1 } }
+    );
+
     return NextResponse.redirect(url.longUrl);
   } catch (error) {
     console.error('Error:', error);
