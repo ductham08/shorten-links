@@ -9,6 +9,7 @@ import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
+import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -23,7 +24,7 @@ export default function Page() {
         setIsLoading(true)
 
         try {
-            const response = await fetch("/api/shorten", {
+            const response = await fetchWithAuth("/api/shorten", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -32,19 +33,6 @@ export default function Page() {
             })
             
             const data = await response.json()
-
-            if (response.status === 401) {
-                toast.error(data.error, {
-                    duration: 1000,
-                    position: "top-right"
-                });
-
-                setTimeout(() => {
-                    window.location.href = "/login";
-                }, 1500);
-
-                return;
-            }
 
             setShortUrl(data.shortUrl)
             toast.success("URL shortened successfully!", {

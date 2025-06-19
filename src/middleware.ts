@@ -7,32 +7,35 @@ const PUBLIC_PATHS = ['/login', '/register', '/api/login', '/api/register']
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Allow public paths
-  if (PUBLIC_PATHS.includes(pathname)) {
+  // Cho phép các đường dẫn công khai
+  if (PUBLIC_PATHS.some(path => pathname.startsWith(path))) {
     return NextResponse.next()
   }
 
-  // Check token in cookie
+  // Lấy token từ cookie
   const token = request.cookies.get('token')?.value
 
-  // No token, redirect to login
+  // Nếu không có token
   if (!token) {
-    if (request.nextUrl.pathname.startsWith('/api/')) {
+    if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized - Please login to continue' }, { status: 401 })
     }
+
     const loginUrl = new URL('/login', request.url)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Verify token
+  // Xác minh token
   const payload = await verifyToken(token)
   if (!payload) {
-    // Clear invalid token
-    const response = request.nextUrl.pathname.startsWith('/api/')
+    const loginUrl = new URL('/login', request.url)
+    const response = pathname.startsWith('/api/')
       ? NextResponse.json({ error: 'Unauthorized - Token expired' }, { status: 401 })
-      : NextResponse.redirect(new URL('/login', request.url))
-    
-    response.cookies.delete('token')
+      : NextResponse.redirect(loginUrl)
+
+    // Xóa token bằng cách tạo response mới rồi set lại cookie
+    response.headers.set('Set-Cookie', 'token=; Path=/; Max-Age=0; HttpOnly')
+
     return response
   }
 
@@ -41,4 +44,4 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)']
-} 
+}
