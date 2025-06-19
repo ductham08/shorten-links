@@ -58,7 +58,7 @@ export default function Page() {
     }
 
     return (
-        <div className="p-4 flex flex-col items-stretch gap-4">
+        <div className="flex flex-col items-stretch gap-4">
             <form onSubmit={handleSubmit} className="flex w-full flex-row gap-4">
                 <div className="w-full max-w-sm flex flex-col gap-2">
                     <Label htmlFor="url">Long Url</Label>
