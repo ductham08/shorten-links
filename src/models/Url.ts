@@ -26,6 +26,11 @@ const urlSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  visits: [{
+    country: String,
+    count: { type: Number, default: 1 },
+    lastVisit: { type: Date, default: Date.now }
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
   const urlParts = request.nextUrl.pathname.split("/");
   const code = urlParts[urlParts.length - 1];
   const userAgent = request.headers.get('user-agent');
+  
+  // Get country from geo header
+  const country = request.headers.get('cf-ipcountry') || process.env.DEV_COUNTRY || 'Unknown';
 
   try {
     await connectDB();
@@ -54,10 +57,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // Increment clicks count
+    // Update clicks and country stats
     await Url.findOneAndUpdate(
       { code },
-      { $inc: { clicks: 1 } }
+      {
+        $inc: { clicks: 1 },
+        $push: {
+          visits: {
+            $each: [{ country, lastVisit: new Date() }],
+            $position: 0
+          }
+        }
+      }
     );
 
     return NextResponse.redirect(url.longUrl);
