@@ -31,6 +31,11 @@ const urlSchema = new mongoose.Schema({
     count: { type: Number, default: 1 },
     lastVisit: { type: Date, default: Date.now }
   }],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
