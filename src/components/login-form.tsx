@@ -61,7 +61,7 @@ export function LoginForm({
           setGeneralError("Login failed")
         }
       } else {
-        setSuccess("Login successful! Redirecting...")
+        setSuccess("Login successful! Redirecting to dashboard...")
         setIdentifier("")
         setPassword("")
         router.push(data.redirectTo || '/')

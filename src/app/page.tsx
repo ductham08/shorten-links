@@ -9,7 +9,6 @@ import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
-import { NextResponse } from "next/server"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -31,20 +30,20 @@ export default function Page() {
                 },
                 body: JSON.stringify({ longUrl: url, alias }),
             })
-
+            
             const data = await response.json()
 
             if (response.status === 401) {
                 toast.error(data.error, {
                     duration: 1000,
                     position: "top-right"
-                })
+                });
 
                 setTimeout(() => {
-                    window.location.href = "/login"
-                }, 1000)
+                    window.location.href = "/login";
+                }, 1500);
 
-                return
+                return;
             }
 
             setShortUrl(data.shortUrl)
@@ -122,6 +121,7 @@ export default function Page() {
                                         type="submit"
                                         variant="outline"
                                         disabled={isLoading}
+                                        className="cursor-pointer"
                                     >
                                         {isLoading ? "Shortening..." : "Shorten"}
                                     </Button>
