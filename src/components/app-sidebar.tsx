@@ -41,9 +41,14 @@ const data = {
   },
   navMain: [
     {
-      title: "My short links",
-      url: "#",
+      title: "Shorten Link",
+      url: "/",
       icon: IconDashboard,
+    },
+    {
+      title: "My Short  Links",
+      url: "/my-short-links",
+      icon: IconListDetails,
     }
   ],
   navClouds: [
