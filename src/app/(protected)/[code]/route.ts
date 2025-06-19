@@ -6,7 +6,7 @@ import Analytics from "@/models/Analytics";
 // Function to check if the request is from a bot
 function isBot(userAgent: string | null): boolean {
   if (!userAgent) return false;
-
+  
   const botPatterns = [
     /bot/i,
     /crawler/i,
@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
 
   try {
     await connectDB();
-
     const url = await Url.findOne({ code });
     if (!url) {
       return NextResponse.json({ error: "URL not found" }, { status: 404 });
@@ -113,4 +112,4 @@ export async function GET(request: NextRequest) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+} 
