@@ -1,48 +1,30 @@
-import { NextResponse } from 'next/server';
-import { jwtVerify, SignJWT } from 'jose';
-import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'ch-236-Uc');
+export const hashPassword = async (password: string) => {
+    return await bcrypt.hash(password, 10);
+};
 
-export async function generateToken(payload: any) {
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('12h')
-    .setIssuedAt()
-    .sign(JWT_SECRET);
-}
+export const verifyPassword = async (password: string, hashedPassword: string) => {
+    return await bcrypt.compare(password, hashedPassword);
+};
 
-export async function verifyToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload;
-  } catch (error) {
-    return null;
-  }
-}
+export const generateAccessToken = (user: { id: string; email: string; role: string }) => {
+    return jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET!, {
+        expiresIn: '15m',
+    });
+};
 
-export async function getTokenData() {
-  const token = (await cookies()).get('token')?.value;
-  if (!token) return null;
-  return await verifyToken(token);
-}
+export const generateRefreshToken = (user: { id: string; email: string; role: string }) => {
+    return jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_REFRESH_SECRET!, {
+        expiresIn: '7d',
+    });
+};
 
-export async function isAuthenticated() {
-  const token = (await cookies()).get('token')?.value;
-  if (!token) return false;
-  const payload = await verifyToken(token);
-  return !!payload;
-}
+export const verifyAccessToken = (token: string) => {
+    return jwt.verify(token, process.env.JWT_SECRET!) as { id: string; email: string; role: string };
+};
 
-export async function setAuthCookie(token: string) {
-  (await cookies()).set('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 60 * 60 * 12 // 12 hours
-  });   
-}
-
-export async function clearAuthCookie() {
-  (await cookies()).delete('token');
-}
+export const verifyRefreshToken = (token: string) => {
+    return jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as { id: string; email: string; role: string };
+};
