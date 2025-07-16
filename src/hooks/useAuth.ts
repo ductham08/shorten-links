@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -7,6 +9,8 @@ interface User {
     role: string;
 }
 
+const isBrowser = typeof window !== 'undefined';
+
 export const useAuth = () => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -14,12 +18,15 @@ export const useAuth = () => {
     const login = async (email: string, password: string) => {
         const res = await axios.post('/api/auth/login', { email, password });
         const { accessToken, refreshToken } = res.data;
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        if (isBrowser) {
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+        }
         setUser(jwtDecode(accessToken));
     };
 
     const refreshAccessToken = async () => {
+        if (!isBrowser) return;
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) return;
         try {
@@ -34,6 +41,7 @@ export const useAuth = () => {
     };
 
     useEffect(() => {
+        if (!isBrowser) return;
         const token = localStorage.getItem('accessToken');
         if (token) {
             try {

@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,11 +11,17 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/ui/password-input"
+import { useState } from "react"
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -52,6 +60,7 @@ export function RegisterForm({
                 </span>
               </div>
               <div className="grid gap-6">
+
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -61,18 +70,29 @@ export function RegisterForm({
                     required
                   />
                 </div>
+
                 <div className="grid gap-3">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </a>
-                  </div>
-                  <Input id="password" type="password" required />
+                  <Label htmlFor="password">Password</Label>
+                  <PasswordInput 
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)} 
+                  />
                 </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="confirmPassword">Confirm the password</Label>
+                  <PasswordInput 
+                    id="confirmPassword" 
+                    type="password" 
+                    required 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+
                 <Button type="submit" className="w-full">
                   Login
                 </Button>
