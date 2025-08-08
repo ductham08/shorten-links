@@ -49,6 +49,7 @@ export function RegisterForm({
 
     // FE validation
     if (!name.trim()) newErrors.name = 'Full name is required'
+    
     if (!email.trim()) {
       newErrors.email = 'Email is required'
     } else if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -78,8 +79,9 @@ export function RegisterForm({
       })
 
       const data = await response.json()
+      console.log("data", data)
 
-      router.push('/dashboard');
+      // router.push('/login');
 
       if (!response.ok) {
         setServerMessage({ text: data.message || 'Registration failed', type: 'error' })
@@ -152,6 +154,7 @@ export function RegisterForm({
                 <div className="grid gap-3">
                   <Label htmlFor="confirmPassword">Confirm the password *</Label>
                   <PasswordInput
+                    required
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -171,7 +174,7 @@ export function RegisterForm({
                 {serverMessage && (
                   <p
                     className={cn(
-                      'text-sm text-center mt-2',
+                      'text-sm text-left mt-2',
                       serverMessage.type === 'error'
                         ? 'text-red-500'
                         : 'text-green-600'
