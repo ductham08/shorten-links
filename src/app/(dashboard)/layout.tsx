@@ -5,13 +5,11 @@ import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import Loading from '@/components/ui/loading';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const router = useRouter();
-
-    console.log(user);
-    
 
     useEffect(() => {
         if (!loading && !user) {
@@ -21,11 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Hiển thị loading hoặc redirect nếu chưa có user
     if (loading) {
-        return (
-            <div className="flex h-screen items-center justify-center">
-                <div className="text-lg">Loading...</div>
-            </div>
-        );
+        return <Loading fullScreen />;
     }
 
     if (!user) {
