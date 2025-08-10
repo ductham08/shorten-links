@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { useState, useRef } from "react"
 import { PasswordInput } from "./ui/password-input"
 import validator from "validator"
-import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export function LoginForm({
   className,
@@ -31,7 +31,7 @@ export function LoginForm({
 
   const emailInputRef = useRef<HTMLInputElement>(null)
   const passwordInputRef = useRef<HTMLInputElement>(null)
-  const router = useRouter()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -74,35 +74,14 @@ export function LoginForm({
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        // Handle server-side errors
-        setServerMessage({ text: data.error || 'An error occurred. Please try again.', type: 'error' })
-        return
+      const result = await login(email, password)
+      
+      if (result.success) {
+        setServerMessage({ text: 'Login successful!', type: 'success' })
+        // Redirect sẽ được xử lý bởi useAuth hook
+      } else {
+        setServerMessage({ text: result.error || 'An error occurred. Please try again.', type: 'error' })
       }
-
-      // Handle successful login
-      const { accessToken, refreshToken } = data
-      // Store tokens (localStorage for simplicity, consider secure alternatives)
-      localStorage.setItem('accessToken', accessToken)
-      localStorage.setItem('refreshToken', refreshToken)
-
-      setServerMessage({ text: 'Login successful!', type: 'success' })
-
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 1000)
-
     } catch (error) {
       setServerMessage({ text: 'An error occurred. Please try again.', type: 'error' })
     } finally {

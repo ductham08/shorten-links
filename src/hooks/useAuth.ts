@@ -1,69 +1,148 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 interface User {
-    id: string;
-    email: string;
-    role: string;
+  id: string;
+  email: string;
+  role: string;
+  name: string;
 }
 
-const isBrowser = typeof window !== 'undefined';
+export function useAuth() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-export const useAuth = () => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+  const getCurrentUser = async (token: string): Promise<User | null> => {
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-    const login = async (email: string, password: string) => {
-        const res = await axios.post('/api/auth/login', { email, password });
-        const { accessToken, refreshToken } = res.data;
-        if (isBrowser) {
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
+      if (response.ok) {
+        const userData = await response.json();
+        return userData;
+      } else if (response.status === 401) {
+        // Token không hợp lệ, thử refresh
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          return await getCurrentUser(refreshed);
         }
-        setUser(jwtDecode(accessToken));
-    };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
+  };
 
-    const refreshAccessToken = async () => {
-        if (!isBrowser) return;
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) return;
-        try {
-            const res = await axios.post('/api/auth/refresh-token', { refreshToken });
-            const { accessToken } = res.data;
-            localStorage.setItem('accessToken', accessToken);
-            setUser(jwtDecode(accessToken));
-        } catch (error) {
-            console.error('Failed to refresh token:', error);
-            setUser(null);
-        }
-    };
+  const refreshAccessToken = async (): Promise<string | null> => {
+    try {
+      const response = await fetch('/api/auth/refresh-token', {
+        method: 'POST',
+        credentials: 'include', // Để gửi refresh token cookie
+      });
 
-    useEffect(() => {
-        if (!isBrowser) return;
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('accessToken', data.accessToken);
+        return data.accessToken;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Kiểm tra xem có đang ở client-side không
+        if (typeof window === 'undefined') return;
+        
+        // Lấy token từ localStorage
         const token = localStorage.getItem('accessToken');
-        if (token) {
-            try {
-                setUser(jwtDecode(token));
-            } catch (error) {
-                refreshAccessToken();
-            }
+        
+        if (!token) {
+          setUser(null);
+          setLoading(false);
+          router.push('/login');
+          return;
         }
+
+        // Lấy thông tin user từ API
+        const userData = await getCurrentUser(token);
+        
+        if (userData) {
+          setUser(userData);
+          setLoading(false);
+        } else {
+          // Không thể lấy thông tin user, xóa token và redirect
+          localStorage.removeItem('accessToken');
+          setUser(null);
+          setLoading(false);
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error('Auth error:', error);
+        // Xóa token và redirect về login
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+        }
+        setUser(null);
         setLoading(false);
-    }, []);
+        router.push('/login');
+      }
+    };
 
-    return { user, login, refreshAccessToken, loading };
-};
+    checkAuth();
+  }, [router]);
 
-function jwtDecode(token: string) {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-        atob(base64)
-            .split('')
-            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-            .join('')
-    );
-    return JSON.parse(jsonPayload);
-}
+  const logout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+    }
+    setUser(null);
+    router.push('/login');
+  };
+
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', // Để nhận refresh token cookie
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('accessToken', data.accessToken);
+        
+        // Lấy thông tin user
+        const userData = await getCurrentUser(data.accessToken);
+        if (userData) {
+          setUser(userData);
+          router.push('/dashboard');
+          return { success: true };
+        }
+      } else {
+        const errorData = await response.json();
+        return { success: false, error: errorData.error };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: 'Network error' };
+    }
+    return { success: false, error: 'Login failed' };
+  };
+
+  return { user, loading, logout, login };
+} 

@@ -1,18 +1,35 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const router = useRouter();
 
-    if (loading) return <div>Loading...</div>;
+    console.log(user);
+    
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login');
+        }
+    }, [user, loading, router]);
+
+    // Hiển thị loading hoặc redirect nếu chưa có user
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="text-lg">Loading...</div>
+            </div>
+        );
+    }
+
     if (!user) {
-        router.push('/login');
-        return null;
+        return null; // Sẽ redirect về login
     }
 
     return (
