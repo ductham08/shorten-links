@@ -281,12 +281,12 @@ export function RegisterForm({
 
               <div className="text-center text-sm">
                 You already have an account?{" "}
-                <a
+                <Link
                   href="/login"
                   className="underline underline-offset-4"
                 >
                   Sign in
-                </a>
+                </Link>
               </div>
             </div>
           </form>

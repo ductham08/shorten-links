@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAccessToken } from './auth';
 
+interface AuthenticatedRequest extends NextRequest {
+    user?: unknown; // hoặc bạn có thể thay unknown bằng type của decoded token
+}
+
 export async function authMiddleware(req: NextRequest) {
     const token = req.headers.get('authorization')?.split(' ')[1];
     if (!token) {
@@ -9,9 +13,9 @@ export async function authMiddleware(req: NextRequest) {
 
     try {
         const decoded = verifyAccessToken(token);
-        (req as any).user = decoded; // Attach user to request
+        (req as AuthenticatedRequest).user = decoded;
         return NextResponse.next();
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 }

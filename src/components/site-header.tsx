@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { usePageTitle } from "./contexts/page-title-context"
+import Link from "next/link"
 
 export function SiteHeader() {
 
@@ -18,14 +19,14 @@ export function SiteHeader() {
         <h1 className="text-base font-medium">{title}</h1>
         <div className="ml-auto flex items-center gap-2">
           <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-            <a
+            <Link
               href="https://t.me/otis_cua"
               rel="noopener noreferrer"
               target="_blank"
               className="dark:text-foreground"
             >
               Support Telegram
-            </a>
+            </Link>
           </Button>
         </div>
       </div>
