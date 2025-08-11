@@ -7,6 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
 import cloudinary from 'cloudinary';
 
+// Ensure this route runs on the Node.js runtime (required for fs, cloudinary SDK)
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 cloudinary.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -53,6 +57,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Image is required' }, { status: 400 });
         }
 
+        // On Vercel, we require Cloudinary envs to be present
+        if (isVercel && (
+            !process.env.CLOUDINARY_CLOUD_NAME ||
+            !process.env.CLOUDINARY_API_KEY ||
+            !process.env.CLOUDINARY_API_SECRET
+        )) {
+            console.error('[SHORT_LINK] Missing Cloudinary env variables')
+            return NextResponse.json({ error: 'Server misconfiguration (Cloudinary).' }, { status: 500 })
+        }
+
         await connectDB();
 
         // Generate slug
@@ -67,21 +81,29 @@ export async function POST(req: NextRequest) {
         }
 
         // Save image
-        await ensureUploadDir();
-        const fileName = `${uuidv4()}-${thumbnail.name}`;
-        const filePath = path.join(UPLOAD_DIR, fileName);
-        const buffer = Buffer.from(await thumbnail.arrayBuffer());
-        await fs.writeFile(filePath, buffer);
-
         let imageUrl: string;
+        const arrayBuffer = await thumbnail.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
         if (isVercel) {
-            // Upload to Cloudinary
-            const result = await cloudinary.v2.uploader.upload(filePath, {
-                folder: 'short-links',
-            });
-            imageUrl = result.secure_url;
+            // Upload directly to Cloudinary without writing temp file
+            const result = await new Promise<cloudinary.UploadApiResponse>((resolve, reject) => {
+                const stream = cloudinary.v2.uploader.upload_stream(
+                    { folder: 'short-links' },
+                    (error, result) => {
+                        if (error || !result) return reject(error ?? new Error('Upload failed'))
+                        resolve(result)
+                    }
+                )
+                stream.end(buffer)
+            })
+            imageUrl = result.secure_url
         } else {
-            // Local
+            // Local filesystem (development)
+            await ensureUploadDir();
+            const fileName = `${uuidv4()}-${thumbnail.name}`;
+            const filePath = path.join(UPLOAD_DIR, fileName);
+            await fs.writeFile(filePath, buffer);
             imageUrl = `/uploads/${fileName}`;
         }
 
@@ -101,8 +123,8 @@ export async function POST(req: NextRequest) {
             image: imageUrl,
         }, { status: 201 });
 
-    } catch (error) {
-        console.error('Short link creation error:', error);
+    } catch (error: any) {
+        console.error('Short link creation error:', error?.message ?? error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
