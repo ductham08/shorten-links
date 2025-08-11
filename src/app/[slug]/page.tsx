@@ -8,22 +8,19 @@ async function getShortLink(slug: string): Promise<IShortLink | null> {
     return await ShortLink.findOne({ slug });
 }
 
-// Giữ params là object đồng bộ
 type Props = {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata(
-    { params }: { params: { slug: string } },
+    { params }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const slug = params.slug;
+    const { slug } = await params;
     const link = await getShortLink(slug);
 
     if (!link) {
-        return {
-            title: 'Not Found',
-        };
+        return { title: 'Not Found' };
     }
 
     const previousImages = (await parent).openGraph?.images || [];
@@ -47,8 +44,8 @@ export async function generateMetadata(
     };
 }
 
-export default async function ShortPage({ params }: { params: { slug: string } }) {
-    const slug = params.slug;
+export default async function ShortPage({ params }: Props) {
+    const { slug } = await params;
     const link = await getShortLink(slug);
 
     if (!link) {
