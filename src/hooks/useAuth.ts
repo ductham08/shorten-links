@@ -130,7 +130,7 @@ export function useAuth() {
         const userData = await getCurrentUser(data.accessToken);
         if (userData) {
           setUser(userData);
-          router.push('/dashboard');
+          router.push('/');
           return { success: true };
         }
       } else {

@@ -78,7 +78,6 @@ export function LoginForm({
       
       if (result.success) {
         setServerMessage({ text: 'Login successful!', type: 'success' })
-        // Redirect sẽ được xử lý bởi useAuth hook
       } else {
         setServerMessage({ text: result.error || 'An error occurred. Please try again.', type: 'error' })
       }
