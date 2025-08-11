@@ -98,11 +98,31 @@ export async function POST(req: NextRequest) {
         if (isVercel) {
             // Upload directly to Cloudinary without writing temp file
             try {
+                console.log('[SHORT_LINK] Starting Cloudinary upload, buffer size:', buffer.byteLength)
+                console.log('[SHORT_LINK] Cloudinary config check:', {
+                    hasUrl: !!process.env.CLOUDINARY_URL,
+                    urlLength: process.env.CLOUDINARY_URL?.length
+                })
+                
                 const result = await new Promise<cloudinary.UploadApiResponse>((resolve, reject) => {
                     const stream = cloudinary.v2.uploader.upload_stream(
-                        { folder: 'short-links' },
+                        { 
+                            folder: 'short-links',
+                            resource_type: 'image',
+                            format: 'auto'
+                        },
                         (error, result) => {
-                            if (error || !result) return reject(error ?? new Error('Upload failed'))
+                            if (error) {
+                                console.error('[SHORT_LINK] Cloudinary stream error:', error)
+                                reject(error)
+                                return
+                            }
+                            if (!result) {
+                                console.error('[SHORT_LINK] Cloudinary no result')
+                                reject(new Error('Upload failed - no result'))
+                                return
+                            }
+                            console.log('[SHORT_LINK] Cloudinary upload success:', result.secure_url)
                             resolve(result)
                         }
                     )
@@ -111,6 +131,7 @@ export async function POST(req: NextRequest) {
                 imageUrl = result.secure_url
             } catch (e: any) {
                 console.error('[SHORT_LINK] Cloudinary upload failed:', e?.message ?? e)
+                console.error('[SHORT_LINK] Full error object:', e)
                 return NextResponse.json({ error: 'Image upload error' }, { status: 502 })
             }
         } else {
