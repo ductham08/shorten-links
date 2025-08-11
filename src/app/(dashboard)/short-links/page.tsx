@@ -61,17 +61,19 @@ export default function AdminPage() {
             newErrors.suffix = 'Custom Suffix can only contain letters, numbers, hyphens, or underscores';
         }
 
-        // Only validate manual inputs when auto metadata is disabled
-        if (!autoGetMetadata) {
-            if (!formData.thumbnail) {
-                newErrors.thumbnail = 'Image is required when auto metadata is disabled';
-            }
-            if (!formData.title) {
-                newErrors.title = 'Website Title is required when auto metadata is disabled';
-            }
-            if (!formData.description) {
-                newErrors.description = 'Description is required when auto metadata is disabled';
-            }
+        // Validate Image
+        if (!formData.thumbnail) {
+            newErrors.thumbnail = 'Image is required';
+        }
+
+        // Validate Title
+        if (!formData.title) {
+            newErrors.title = 'Website Title is required';
+        }
+
+        // Validate Description
+        if (!formData.description) {
+            newErrors.description = 'Description is required';
         }
 
         setErrors(newErrors);
@@ -90,20 +92,14 @@ export default function AdminPage() {
 
         const submitData = new FormData();
         submitData.append('url', formData.url);
-        submitData.append('autoGetMetadata', autoGetMetadata.toString());
-        
         if (customSuffix && formData.suffix) {
             submitData.append('suffix', formData.suffix);
         }
-        
-        if (!autoGetMetadata) {
-            // Only send manual inputs when auto metadata is disabled
-            if (formData.thumbnail) {
-                submitData.append('thumbnail', formData.thumbnail);
-            }
-            submitData.append('title', formData.title);
-            submitData.append('description', formData.description);
+        if (formData.thumbnail) {
+            submitData.append('thumbnail', formData.thumbnail);
         }
+        submitData.append('title', formData.title);
+        submitData.append('description', formData.description);
 
         try {
             const response = await fetch('/api/links/short', {
@@ -168,33 +164,18 @@ export default function AdminPage() {
                                     />
                                     {errors.url && <p className="text-red-500 text-sm">{errors.url}</p>}
                                 </div>
-                                <div className='flex gap-4 flex-start'>
-                                    <div className="flex flex-col gap-3">
-                                        <Label htmlFor="custom-suffix">Custom Suffix</Label>
-                                        <Switch
-                                            className="cursor-pointer"
-                                            id="custom-suffix"
-                                            checked={customSuffix}
-                                            onClick={() => setCustomSuffix(!customSuffix)}
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <Label htmlFor="auto-metadata">Auto Get Metadata</Label>
-                                        <Switch
-                                            className="cursor-pointer"
-                                            id="auto-metadata"
-                                            checked={autoGetMetadata}
-                                            onClick={() => setAutoGetMetadata(!autoGetMetadata)}
-                                        />
-                                    </div>
+                                <div className="w-md flex flex-col gap-3">
+                                    <Label htmlFor="custom-suffix">Custom Suffix</Label>
+                                    <Switch
+                                        className="cursor-pointer"
+                                        id="custom-suffix"
+                                        checked={customSuffix}
+                                        onClick={() => setCustomSuffix(!customSuffix)}
+                                    />
                                 </div>
-
                                 {customSuffix && (
                                     <div className="w-md flex flex-col gap-3">
-                                        <Label htmlFor="suffix">
-                                            <i className="text-red-500 text-[12px]">*</i>
-                                            Custom Suffix
-                                        </Label>
+                                        <Label htmlFor="suffix">Custom Suffix</Label>
                                         <Input
                                             id="suffix"
                                             type="text"
@@ -205,50 +186,44 @@ export default function AdminPage() {
                                         {errors.suffix && <p className="text-red-500 text-sm">{errors.suffix}</p>}
                                     </div>
                                 )}
-
-                                {!autoGetMetadata && (
-                                    <>
-                                        <div className="w-md flex flex-col gap-3">
-                                            <Label htmlFor="thumbnail">
-                                                <i className="text-red-500 text-[12px]">*</i>
-                                                Image
-                                            </Label>
-                                            <Input
-                                                id="thumbnail"
-                                                type="file"
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail}</p>}
-                                        </div>
-                                        <div className="w-md flex flex-col gap-3">
-                                            <Label htmlFor="title">
-                                                <i className="text-red-500 text-[12px]">*</i>
-                                                Website Title
-                                            </Label>
-                                            <Input
-                                                id="title"
-                                                type="text"
-                                                value={formData.title}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-                                        </div>
-                                        <div className="w-md flex flex-col gap-3">
-                                            <Label htmlFor="description">
-                                                <i className="text-red-500 text-[12px]">*</i>
-                                                Description
-                                            </Label>
-                                            <Textarea
-                                                id="description"
-                                                value={formData.description}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
-                                        </div>
-                                    </>
-                                )}
-
-
+                                
+                                <div className="w-md flex flex-col gap-3">
+                                    <Label htmlFor="thumbnail">
+                                        <i className="text-red-500 text-[12px]">*</i>
+                                        Image
+                                    </Label>
+                                    <Input
+                                        id="thumbnail"
+                                        type="file"
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail}</p>}
+                                </div>
+                                <div className="w-md flex flex-col gap-3">
+                                    <Label htmlFor="title">
+                                        <i className="text-red-500 text-[12px]">*</i>
+                                        Website Title
+                                    </Label>
+                                    <Input
+                                        id="title"
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+                                </div>
+                                <div className="w-md flex flex-col gap-3">
+                                    <Label htmlFor="description">
+                                        <i className="text-red-500 text-[12px]">*</i>
+                                        Description
+                                    </Label>
+                                    <Textarea
+                                        id="description"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+                                </div>
                                 <Button type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? 'Saving...' : 'Save'}
                                 </Button>
