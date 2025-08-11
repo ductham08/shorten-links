@@ -12,9 +12,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 cloudinary.v2.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+    url: process.env.CLOUDINARY_URL,
 });
 
 const isVercel = process.env.VERCEL === '1';
@@ -58,12 +56,8 @@ export async function POST(req: NextRequest) {
         }
 
         // On Vercel, we require Cloudinary envs to be present
-        if (isVercel && (
-            !process.env.CLOUDINARY_CLOUD_NAME ||
-            !process.env.CLOUDINARY_API_KEY ||
-            !process.env.CLOUDINARY_API_SECRET
-        )) {
-            console.error('[SHORT_LINK] Missing Cloudinary env variables')
+        if (isVercel && !process.env.CLOUDINARY_URL) {
+            console.error('[SHORT_LINK] Missing CLOUDINARY_URL env variable')
             return NextResponse.json({ error: 'Server misconfiguration (Cloudinary).' }, { status: 500 })
         }
 
