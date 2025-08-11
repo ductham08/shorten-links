@@ -1,0 +1,72 @@
+import { Metadata, ResolvingMetadata } from 'next';
+import { notFound } from 'next/navigation';
+import connectDB from '@/lib/db';
+import ShortLink, { IShortLink } from '@/models/ShortLink';
+
+async function getShortLink(slug: string): Promise<IShortLink | null> {
+    await connectDB();
+    return await ShortLink.findOne({ slug });
+}
+
+type Props = {
+    params: { slug: string };
+};
+
+export async function generateMetadata(
+    { params }: Props,
+    parent: ResolvingMetadata
+): Promise<Metadata> {
+    const slug = params.slug;
+    const link = await getShortLink(slug);
+
+    if (!link) {
+        return {
+            title: 'Not Found',
+        };
+    }
+
+    const previousImages = (await parent).openGraph?.images || [];
+
+    return {
+        title: link.title,
+        description: link.description,
+        openGraph: {
+            title: link.title,
+            description: link.description,
+            images: [link.image, ...previousImages],
+            url: link.url,
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: link.title,
+            description: link.description,
+            images: [link.image],
+        },
+    };
+}
+
+export default async function ShortPage({ params }: Props) {
+    const slug = params.slug;
+    const link = await getShortLink(slug);
+
+    if (!link) {
+        notFound();
+    }
+
+    // Redirect client-side để bots lấy được metadata
+    return (
+        <html>
+            <head>
+                <meta httpEquiv="refresh" content={`0; url=${link.url}`} />
+            </head>
+            <body>
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `window.location.href = "${link.url}";`,
+                    }}
+                />
+            </body>
+        </html>
+    );
+}

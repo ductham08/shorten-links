@@ -23,6 +23,7 @@ interface Errors {
     thumbnail?: string;
     title?: string;
     description?: string;
+    api?: string; // Thêm để lưu lỗi từ API
 }
 
 export default function AdminPage() {
@@ -36,6 +37,7 @@ export default function AdminPage() {
         description: '',
     });
     const [errors, setErrors] = useState<Errors>({});
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     useEffect(() => {
         setTitle('Short links');
@@ -77,32 +79,53 @@ export default function AdminPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (validateForm()) {
-            // If validation passes, proceed with form submission (e.g., API call)
-            console.log('Form data:', formData);
-            // Example: Send data to an API
-            /*
-            const formDataToSend = new FormData();
-            formDataToSend.append('url', formData.url);
-            if (customSuffix) formDataToSend.append('suffix', formData.suffix);
-            formDataToSend.append('thumbnail', formData.thumbnail);
-            formDataToSend.append('title', formData.title);
-            formDataToSend.append('description', formData.description);
-      
-            fetch('/api/shorten', {
-              method: 'POST',
-              body: formDataToSend,
-            })
-              .then((res) => res.json())
-              .then((data) => console.log('Success:', data))
-              .catch((err) => console.error('Error:', err));
-            */
-            alert('Form submitted successfully!');
-        } else {
-            console.log('Validation errors:', errors);
+        if (!validateForm()) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        setErrors((prev) => ({ ...prev, api: undefined })); // Clear API error before submit
+
+        const submitData = new FormData();
+        submitData.append('url', formData.url);
+        if (customSuffix && formData.suffix) {
+            submitData.append('suffix', formData.suffix);
+        }
+        if (formData.thumbnail) {
+            submitData.append('thumbnail', formData.thumbnail);
+        }
+        submitData.append('title', formData.title);
+        submitData.append('description', formData.description);
+
+        try {
+            const response = await fetch('/api/links/short', {
+                method: 'POST',
+                body: submitData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'API request failed');
+            }
+
+            // Reset form after success
+            setFormData({
+                url: '',
+                suffix: '',
+                thumbnail: null,
+                title: '',
+                description: '',
+            });
+            setCustomSuffix(false);
+            setErrors({});
+        } catch (err) {
+            setErrors((prev) => ({ ...prev, api: (err as Error).message }));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -112,7 +135,8 @@ export default function AdminPage() {
             ...prev,
             [id]: files ? files[0] : value,
         }));
-        setErrors((prev) => ({ ...prev, [id]: '' }));
+        // Clear error for the field, including API error
+        setErrors((prev) => ({ ...prev, [id]: undefined, api: undefined }));
     };
 
     return (
@@ -198,7 +222,10 @@ export default function AdminPage() {
                                     />
                                     {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
                                 </div>
-                                <Button type="submit">Save</Button>
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Saving...' : 'Save'}
+                                </Button>
+                                {errors.api && <p className="text-red-500 text-sm mt-2">{errors.api}</p>}
                             </div>
                         </form>
                     </div>
