@@ -8,12 +8,13 @@ async function getShortLink(slug: string): Promise<IShortLink | null> {
     return await ShortLink.findOne({ slug });
 }
 
+// Giữ params là object đồng bộ
 type Props = {
     params: { slug: string };
 };
 
 export async function generateMetadata(
-    { params }: Props,
+    { params }: { params: { slug: string } },
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const slug = params.slug;
@@ -46,7 +47,7 @@ export async function generateMetadata(
     };
 }
 
-export default async function ShortPage({ params }: Props) {
+export default async function ShortPage({ params }: { params: { slug: string } }) {
     const slug = params.slug;
     const link = await getShortLink(slug);
 
@@ -54,7 +55,6 @@ export default async function ShortPage({ params }: Props) {
         notFound();
     }
 
-    // Redirect client-side để bots lấy được metadata
     return (
         <html>
             <head>
