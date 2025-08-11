@@ -29,6 +29,7 @@ interface Errors {
 export default function AdminPage() {
     const { setTitle } = usePageTitle();
     const [customSuffix, setCustomSuffix] = useState<boolean>(false);
+    const [autoGetMetadata, setAutoGetMetadata] = useState<boolean>(true);
     const [formData, setFormData] = useState<FormData>({
         url: '',
         suffix: '',
@@ -163,18 +164,33 @@ export default function AdminPage() {
                                     />
                                     {errors.url && <p className="text-red-500 text-sm">{errors.url}</p>}
                                 </div>
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="custom-suffix">Custom Suffix</Label>
-                                    <Switch
-                                        className="cursor-pointer"
-                                        id="custom-suffix"
-                                        checked={customSuffix}
-                                        onClick={() => setCustomSuffix(!customSuffix)}
-                                    />
+                                <div className='flex gap-4 flex-start'>
+                                    <div className="flex flex-col gap-3">
+                                        <Label htmlFor="custom-suffix">Custom Suffix</Label>
+                                        <Switch
+                                            className="cursor-pointer"
+                                            id="custom-suffix"
+                                            checked={customSuffix}
+                                            onClick={() => setCustomSuffix(!customSuffix)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        <Label htmlFor="auto-metadata">Auto Get Metadata</Label>
+                                        <Switch
+                                            className="cursor-pointer"
+                                            id="auto-metadata"
+                                            checked={autoGetMetadata}
+                                            onClick={() => setAutoGetMetadata(!autoGetMetadata)}
+                                        />
+                                    </div>
                                 </div>
+
                                 {customSuffix && (
                                     <div className="w-md flex flex-col gap-3">
-                                        <Label htmlFor="suffix">Custom Suffix</Label>
+                                        <Label htmlFor="suffix">
+                                            <i className="text-red-500 text-[12px]">*</i>
+                                            Custom Suffix
+                                        </Label>
                                         <Input
                                             id="suffix"
                                             type="text"
@@ -185,43 +201,50 @@ export default function AdminPage() {
                                         {errors.suffix && <p className="text-red-500 text-sm">{errors.suffix}</p>}
                                     </div>
                                 )}
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="thumbnail">
-                                        <i className="text-red-500 text-[12px]">*</i>
-                                        Image
-                                    </Label>
-                                    <Input
-                                        id="thumbnail"
-                                        type="file"
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail}</p>}
-                                </div>
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="title">
-                                        <i className="text-red-500 text-[12px]">*</i>
-                                        Website Title
-                                    </Label>
-                                    <Input
-                                        id="title"
-                                        type="text"
-                                        value={formData.title}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-                                </div>
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="description">
-                                        <i className="text-red-500 text-[12px]">*</i>
-                                        Description
-                                    </Label>
-                                    <Textarea
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
-                                </div>
+
+                                {!autoGetMetadata && (
+                                    <>
+                                        <div className="w-md flex flex-col gap-3">
+                                            <Label htmlFor="thumbnail">
+                                                <i className="text-red-500 text-[12px]">*</i>
+                                                Image
+                                            </Label>
+                                            <Input
+                                                id="thumbnail"
+                                                type="file"
+                                                onChange={handleInputChange}
+                                            />
+                                            {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail}</p>}
+                                        </div>
+                                        <div className="w-md flex flex-col gap-3">
+                                            <Label htmlFor="title">
+                                                <i className="text-red-500 text-[12px]">*</i>
+                                                Website Title
+                                            </Label>
+                                            <Input
+                                                id="title"
+                                                type="text"
+                                                value={formData.title}
+                                                onChange={handleInputChange}
+                                            />
+                                            {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+                                        </div>
+                                        <div className="w-md flex flex-col gap-3">
+                                            <Label htmlFor="description">
+                                                <i className="text-red-500 text-[12px]">*</i>
+                                                Description
+                                            </Label>
+                                            <Textarea
+                                                id="description"
+                                                value={formData.description}
+                                                onChange={handleInputChange}
+                                            />
+                                            {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+                                        </div>
+                                    </>
+                                )}
+
+
                                 <Button type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? 'Saving...' : 'Save'}
                                 </Button>
