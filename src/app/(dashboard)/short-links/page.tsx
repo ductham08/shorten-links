@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import SuccessModal from '@/components/success-modal';
 
 interface FormData {
     url: string;
@@ -39,6 +40,8 @@ export default function AdminPage() {
     });
     const [errors, setErrors] = useState<Errors>({});
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+    const [generatedShortUrl, setGeneratedShortUrl] = useState<string>('');
 
     useEffect(() => {
         setTitle('Short links');
@@ -112,6 +115,12 @@ export default function AdminPage() {
             if (!response.ok) {
                 throw new Error(data.error || 'API request failed');
             }
+
+            // Set the generated short URL and show success modal
+            const shortUrl = `${window.location.origin}/${data.slug || data.suffix}`;
+
+            setGeneratedShortUrl(shortUrl);
+            setShowSuccessModal(true);
 
             // Reset form after success
             setFormData({
@@ -233,6 +242,17 @@ export default function AdminPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Success Modal */}
+            <SuccessModal
+                isOpen={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                title="Short URL Created Successfully!"
+                url={generatedShortUrl}
+                showUrl={true}
+                showCopyButton={true}
+                showOpenButton={true}
+            />
         </div>
     );
 }
