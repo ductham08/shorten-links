@@ -3,17 +3,18 @@ import connectDB from '@/lib/db';
 import ShortLink from '@/models/ShortLink';
 import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
-import cloudinary, { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Config Cloudinary
-cloudinary.v2.config({
-    url: process.env.CLOUDINARY_URL,
+// Config Cloudinary (lấy từ env thay vì hardcode)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+    api_key: process.env.CLOUDINARY_API_KEY!,
+    api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-// Interface cho dữ liệu request
 interface ShortLinkForm {
     url: string;
     title: string;
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             thumbnail: formData.get('thumbnail') as File,
         };
 
-        // Validate input
+        // Validate
         if (!data.url || !data.title || !data.description) {
             return NextResponse.json({ error: 'URL, title, and description are required' }, { status: 400 });
         }
@@ -54,18 +55,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({ error: 'Image is required' }, { status: 400 });
         }
 
-        // Check Cloudinary config
-        if (!process.env.CLOUDINARY_URL) {
-            return NextResponse.json({ error: 'Server misconfiguration (Cloudinary).' }, { status: 500 });
-        }
-
-        // Connect DB
-        if (!process.env.MONGODB_URI) {
-            return NextResponse.json({ error: 'Server misconfiguration (Database).' }, { status: 500 });
-        }
+        // DB connect
         await connectDB();
 
-        // Generate slug
+        // Slug
         let slug: string = data.suffix || uuidv4().slice(0, 8);
         let existingShortLink = await ShortLink.findOne({ slug });
         while (existingShortLink && !data.suffix) {
@@ -76,59 +69,46 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({ error: 'Custom suffix already exists' }, { status: 409 });
         }
 
-        // Convert File to Buffer
-        const buffer: Buffer = Buffer.from(await data.thumbnail.arrayBuffer());
-
-        // Limit size 4MB
+        // Convert File to base64
+        const arrayBuffer = await data.thumbnail.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
         const MAX_SIZE_BYTES = 4 * 1024 * 1024;
         if (buffer.byteLength > MAX_SIZE_BYTES) {
             return NextResponse.json({ error: 'Image is too large (max 4MB).' }, { status: 413 });
         }
+        const mimeType = data.thumbnail.type || 'image/jpeg';
+        const base64Image = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
         // Upload to Cloudinary
-        let imageUrl: string;
+        let uploadResult: UploadApiResponse;
         try {
-            const result: UploadApiResponse = await new Promise((resolve, reject) => {
-                const stream = cloudinary.v2.uploader.upload_stream(
-                    {
-                        folder: 'short-links',
-                        resource_type: 'image',
-                        format: 'auto',
-                    },
-                    (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
-                        if (error) reject(error);
-                        else if (!result) reject(new Error('Upload failed - no result'));
-                        else resolve(result);
-                    }
-                );
-                stream.end(buffer);
+            uploadResult = await cloudinary.uploader.upload(base64Image, {
+                folder: 'short-links',
+                public_id: uuidv4(),
+                resource_type: 'image',
+                overwrite: false,
             });
-            imageUrl = result.secure_url;
-        } catch (error) {
-            console.error('Cloudinary upload failed:', error);
-            return NextResponse.json({ error: 'Image upload error' }, { status: 502 });
+        } catch (error: unknown) {
+            console.error('Cloudinary upload error:', error);
+            const err = error as UploadApiErrorResponse;
+            return NextResponse.json({ error: err.message || 'Upload failed' }, { status: 502 });
         }
 
         // Save DB
-        try {
-            const shortLink = new ShortLink({
-                slug,
-                url: data.url,
-                title: data.title,
-                description: data.description,
-                image: imageUrl,
-            });
-            await shortLink.save();
-        } catch (error) {
-            console.error('Database save error:', error);
-            return NextResponse.json({ error: 'Database save error' }, { status: 500 });
-        }
+        const shortLink = new ShortLink({
+            slug,
+            url: data.url,
+            title: data.title,
+            description: data.description,
+            image: uploadResult.secure_url,
+        });
+        await shortLink.save();
 
         return NextResponse.json(
             {
                 message: 'Short link created successfully',
                 slug,
-                image: imageUrl,
+                image: uploadResult.secure_url,
             },
             { status: 201 }
         );
