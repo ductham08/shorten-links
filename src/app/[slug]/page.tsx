@@ -31,7 +31,7 @@ export async function generateMetadata(
         openGraph: {
             title: link.title,
             description: link.description,
-            images: [link.image, ...previousImages],
+            images: link.image ? [link.image, ...previousImages] : previousImages,
             url: link.url,
             type: 'website',
         },
@@ -39,7 +39,7 @@ export async function generateMetadata(
             card: 'summary_large_image',
             title: link.title,
             description: link.description,
-            images: [link.image],
+            images: link.image ? [link.image] : [],
         },
     };
 }

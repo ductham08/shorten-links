@@ -61,19 +61,17 @@ export default function AdminPage() {
             newErrors.suffix = 'Custom Suffix can only contain letters, numbers, hyphens, or underscores';
         }
 
-        // Validate Image
-        if (!formData.thumbnail) {
-            newErrors.thumbnail = 'Image is required';
-        }
-
-        // Validate Title
-        if (!formData.title) {
-            newErrors.title = 'Website Title is required';
-        }
-
-        // Validate Description
-        if (!formData.description) {
-            newErrors.description = 'Description is required';
+        // Only validate manual inputs when auto metadata is disabled
+        if (!autoGetMetadata) {
+            if (!formData.thumbnail) {
+                newErrors.thumbnail = 'Image is required when auto metadata is disabled';
+            }
+            if (!formData.title) {
+                newErrors.title = 'Website Title is required when auto metadata is disabled';
+            }
+            if (!formData.description) {
+                newErrors.description = 'Description is required when auto metadata is disabled';
+            }
         }
 
         setErrors(newErrors);
@@ -92,14 +90,20 @@ export default function AdminPage() {
 
         const submitData = new FormData();
         submitData.append('url', formData.url);
+        submitData.append('autoGetMetadata', autoGetMetadata.toString());
+        
         if (customSuffix && formData.suffix) {
             submitData.append('suffix', formData.suffix);
         }
-        if (formData.thumbnail) {
-            submitData.append('thumbnail', formData.thumbnail);
+        
+        if (!autoGetMetadata) {
+            // Only send manual inputs when auto metadata is disabled
+            if (formData.thumbnail) {
+                submitData.append('thumbnail', formData.thumbnail);
+            }
+            submitData.append('title', formData.title);
+            submitData.append('description', formData.description);
         }
-        submitData.append('title', formData.title);
-        submitData.append('description', formData.description);
 
         try {
             const response = await fetch('/api/links/short', {
