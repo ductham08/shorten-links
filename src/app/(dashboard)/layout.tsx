@@ -6,6 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Loading from '@/components/ui/loading';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { SiteHeader } from '@/components/site-header';
+import { AppSidebar } from '@/components/app-sidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
@@ -27,12 +30,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     return (
-        <div className="flex h-screen">
-            <Sidebar />
-            <div className="flex-1 flex flex-col">
-                <Navbar user={user} />
-                <main className="p-6">{children}</main>
-            </div>
-        </div>
+        <SidebarProvider
+            style={
+                {
+                    "--sidebar-width": "calc(var(--spacing) * 72)",
+                    "--header-height": "calc(var(--spacing) * 12)",
+                } as React.CSSProperties
+            }
+        >
+            <AppSidebar variant="inset" />
+            <SidebarInset>
+                <SiteHeader />
+                <div className="flex flex-1 flex-col">
+                    <div className="@container/main flex flex-1 flex-col gap-2">
+                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                            {/* <SectionCards />
+                            <div className="px-4 lg:px-6">
+                                <ChartAreaInteractive />
+                            </div>
+                            <DataTable data={data} /> */}
+                        </div>
+                    </div>
+                </div>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }
