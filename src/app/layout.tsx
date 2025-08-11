@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Crab Protect",
   description: "Shorten and move to your url absolutely absolutely",
   icons: {
-    icon: '/icons/favicon.png', // Path to favicon in /public or /app
+    icon: '/icons/favicon.png',
   },
   openGraph: {
     title: "Crab Protect",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/thumbnail.jpg", // Replace with your image URL
+        url: "/thumbnail.jpg",
         width: 1200,
         height: 630,
         alt: "Crab Protect Thumbnail",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Crab Protect",
     description: "Shorten and move to your url absolutely absolutely",
-    images: ["/thumbnail.jpg"], // Replace with your image URL
+    images: ["/thumbnail.jpg"],
   },
 };
 
