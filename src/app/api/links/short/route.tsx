@@ -67,7 +67,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Server misconfiguration (Cloudinary).' }, { status: 500 })
         }
 
-        await connectDB();
+        // Validate DB env before trying to connect
+        if (!process.env.MONGODB_URI) {
+            console.error('[SHORT_LINK] Missing MONGODB_URI')
+            return NextResponse.json({ error: 'Server misconfiguration (Database).' }, { status: 500 })
+        }
+        try {
+            await connectDB();
+        } catch (e: any) {
+            console.error('[SHORT_LINK] DB connection failed:', e?.message ?? e)
+            return NextResponse.json({ error: 'Database connection error' }, { status: 500 })
+        }
 
         // Generate slug
         let slug = suffix || uuidv4().slice(0, 8);
@@ -85,37 +95,58 @@ export async function POST(req: NextRequest) {
         const arrayBuffer = await thumbnail.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
+        // Enforce a safe size limit for serverless (e.g., 4 MB)
+        const MAX_SIZE_BYTES = 4 * 1024 * 1024
+        if (isVercel && buffer.byteLength > MAX_SIZE_BYTES) {
+            return NextResponse.json({ error: 'Image is too large (max 4MB on serverless).' }, { status: 413 })
+        }
+
         if (isVercel) {
             // Upload directly to Cloudinary without writing temp file
-            const result = await new Promise<cloudinary.UploadApiResponse>((resolve, reject) => {
-                const stream = cloudinary.v2.uploader.upload_stream(
-                    { folder: 'short-links' },
-                    (error, result) => {
-                        if (error || !result) return reject(error ?? new Error('Upload failed'))
-                        resolve(result)
-                    }
-                )
-                stream.end(buffer)
-            })
-            imageUrl = result.secure_url
+            try {
+                const result = await new Promise<cloudinary.UploadApiResponse>((resolve, reject) => {
+                    const stream = cloudinary.v2.uploader.upload_stream(
+                        { folder: 'short-links' },
+                        (error, result) => {
+                            if (error || !result) return reject(error ?? new Error('Upload failed'))
+                            resolve(result)
+                        }
+                    )
+                    stream.end(buffer)
+                })
+                imageUrl = result.secure_url
+            } catch (e: any) {
+                console.error('[SHORT_LINK] Cloudinary upload failed:', e?.message ?? e)
+                return NextResponse.json({ error: 'Image upload error' }, { status: 502 })
+            }
         } else {
             // Local filesystem (development)
             await ensureUploadDir();
             const fileName = `${uuidv4()}-${thumbnail.name}`;
             const filePath = path.join(UPLOAD_DIR, fileName);
-            await fs.writeFile(filePath, buffer);
+            try {
+                await fs.writeFile(filePath, buffer);
+            } catch (e: any) {
+                console.error('[SHORT_LINK] Write file failed:', e?.message ?? e)
+                return NextResponse.json({ error: 'Image write error' }, { status: 500 })
+            }
             imageUrl = `/uploads/${fileName}`;
         }
 
         // Save DB
-        const shortLink = new ShortLink({
-            slug,
-            url,
-            title,
-            description,
-            image: imageUrl,
-        });
-        await shortLink.save();
+        try {
+            const shortLink = new ShortLink({
+                slug,
+                url,
+                title,
+                description,
+                image: imageUrl,
+            });
+            await shortLink.save();
+        } catch (e: any) {
+            console.error('[SHORT_LINK] Save document failed:', e?.message ?? e)
+            return NextResponse.json({ error: 'Database save error' }, { status: 500 })
+        }
 
         return NextResponse.json({
             message: 'Short link created successfully',
@@ -124,7 +155,7 @@ export async function POST(req: NextRequest) {
         }, { status: 201 });
 
     } catch (error: any) {
-        console.error('Short link creation error:', error?.message ?? error);
+        console.error('Short link creation error (unexpected):', error?.message ?? error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
