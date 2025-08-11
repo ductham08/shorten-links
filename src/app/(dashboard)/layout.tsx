@@ -1,7 +1,5 @@
 'use client';
 
-import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -13,6 +11,9 @@ import { AppSidebar } from '@/components/app-sidebar';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const router = useRouter();
+
+    console.log(user);
+    
 
     useEffect(() => {
         if (!loading && !user) {
@@ -26,7 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     if (!user) {
-        return null; // Sẽ redirect về login
+        return null;
     }
 
     return (
@@ -38,7 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="inset" />
+            <AppSidebar variant="inset" user={user} />
             <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col">
@@ -49,6 +50,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 <ChartAreaInteractive />
                             </div>
                             <DataTable data={data} /> */}
+                            <div className="px-4 lg:px-6">
+                                {children}
+                            </div>
                         </div>
                     </div>
                 </div>
