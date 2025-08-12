@@ -2,7 +2,13 @@ import connectDB from '@/lib/db';
 import ShortLink from '@/models/ShortLink';
 import { headers } from 'next/headers';
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+type PageProps = {
+    params: {
+        slug: string;
+    };
+};
+
+export async function generateMetadata({ params }: PageProps) {
     await connectDB();
     const data = await ShortLink.findOne({ slug: params.slug });
     if (!data) return {};
@@ -30,19 +36,22 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
 }
 
-export default async function ShortLinkPage({ params }: { params: { slug: string } }) {
+export default async function ShortLinkPage({ params }: PageProps) {
     await connectDB();
     const data = await ShortLink.findOne({ slug: params.slug });
 
-    if (!data) return <h1>Link not found</h1>;
+    if (!data) {
+        return <h1>Not found</h1>;
+    }
 
+    // Meta refresh để redirect người dùng thật
     return (
-        <>
-            <html>
-                <head>
-                    <meta httpEquiv="refresh" content={`0;url=${data.url}`} />
-                </head>
-            </html>
-        </>
+        <html>
+            <head>
+                <meta httpEquiv="refresh" content={`0;url=${data.url}`} />
+            </head>
+            <body>
+            </body>
+        </html>
     );
 }
