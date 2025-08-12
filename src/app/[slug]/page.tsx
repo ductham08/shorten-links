@@ -2,18 +2,32 @@ import { notFound, redirect } from 'next/navigation';
 import connectDB from '@/lib/db';
 import ShortLink, { IShortLink } from '@/models/ShortLink';
 import Analytic from '@/models/Analytic';
+import mongoose, { ClientSession } from 'mongoose';
+import axios from 'axios';
 
-function extractCountryFromHeaders(headers: Headers): string | null {
-    const cfCountry = headers.get('cf-ipcountry');
-    const vercelCountry = headers.get('x-vercel-ip-country');
-    const country = (cfCountry || vercelCountry || '').toUpperCase();
-    return country || null;
+// Hàm gọi API để lấy country code từ IP
+async function getCountryCodeFromIP(): Promise<string | null> {
+    try {
+        const response = await axios.get('https://ipwho.is/');
+        return response.data.country_code || null;
+    } catch (error) {
+        console.error('Lỗi khi lấy country code:', error);
+        return null;
+    }
 }
 
-async function getAndIncrementShortLink(slug: string, reqHeaders?: Headers): Promise<IShortLink | null> {
+interface AnalyticUpdate {
+    $inc: Record<string, number>;
+}
+
+async function getAndIncrementShortLink(
+    slug: string,
+    country?: string
+): Promise<IShortLink | null> {
     await connectDB();
-    const session = await (await import('mongoose')).default.startSession();
+    const session: ClientSession = await mongoose.startSession();
     let link: IShortLink | null = null;
+
     try {
         await session.withTransaction(async () => {
             link = await ShortLink.findOneAndUpdate(
@@ -21,14 +35,14 @@ async function getAndIncrementShortLink(slug: string, reqHeaders?: Headers): Pro
                 { $inc: { clicks: 1 } },
                 { new: true, session }
             );
+
             if (!link) return;
 
-            const country = reqHeaders ? extractCountryFromHeaders(reqHeaders) : null;
-
-            const update: Record<string, unknown> = { $inc: { totalClicks: 1 } };
+            const update: AnalyticUpdate = { $inc: { totalClicks: 1 } };
             if (country) {
-                (update.$inc as any)[`countries.${country}`] = 1;
+                update.$inc[`countries.${country}`] = 1;
             }
+
             await Analytic.findOneAndUpdate(
                 { linkId: link._id },
                 update,
@@ -38,16 +52,22 @@ async function getAndIncrementShortLink(slug: string, reqHeaders?: Headers): Pro
     } finally {
         await session.endSession();
     }
+
     return link;
 }
 
 type Props = {
-    params: Promise<{ slug: string }>;
+    params: { slug: string };
 };
 
 export default async function ShortPage({ params }: Props) {
-    const { slug } = await params;
-    const link = await getAndIncrementShortLink(slug, (globalThis as any)?.headers);
+    const { slug } = params;
+
+    // Chỉ gọi API để lấy country code
+    const country = await getCountryCodeFromIP() || undefined;
+
+    // Lấy link và update analytics
+    const link = await getAndIncrementShortLink(slug, country);
 
     if (!link) {
         notFound();
