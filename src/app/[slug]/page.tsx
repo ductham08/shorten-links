@@ -40,7 +40,7 @@ export default async function ShortLinkPage({ params }: { params: { slug: string
         <>
             <html>
                 <head>
-                    {/* <meta httpEquiv="refresh" content={`0;url=${data.url}`} /> */}
+                    <meta httpEquiv="refresh" content={`0;url=${data.url}`} />
                 </head>
             </html>
         </>
