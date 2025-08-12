@@ -2,9 +2,14 @@ import { notFound, redirect } from 'next/navigation';
 import connectDB from '@/lib/db';
 import ShortLink, { IShortLink } from '@/models/ShortLink';
 
-async function getShortLink(slug: string): Promise<IShortLink | null> {
+async function getAndIncrementShortLink(slug: string): Promise<IShortLink | null> {
     await connectDB();
-    return await ShortLink.findOne({ slug });
+    // Atomically increment clicks and return the document
+    return await ShortLink.findOneAndUpdate(
+        { slug },
+        { $inc: { clicks: 1 } },
+        { new: true }
+    );
 }
 
 type Props = {
@@ -13,7 +18,7 @@ type Props = {
 
 export default async function ShortPage({ params }: Props) {
     const { slug } = await params;
-    const link = await getShortLink(slug);
+    const link = await getAndIncrementShortLink(slug);
 
     if (!link) {
         notFound();
