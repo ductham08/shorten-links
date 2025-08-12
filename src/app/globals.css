@@ -125,3 +125,7 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+button{
+  cursor: pointer !important;
+}
