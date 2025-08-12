@@ -4,8 +4,6 @@ import ShortLink from '@/models/ShortLink';
 import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
 import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
-import { promises as fs } from 'fs';
-import path from 'path';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,53 +21,6 @@ interface ShortLinkForm {
     description: string;
     suffix?: string;
     thumbnail: File;
-}
-
-function escapeHtml(text: string): string {
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function buildRedirectHtml(params: { title: string; description: string; imageUrl: string; targetUrl: string; shortPath: string; }): string {
-    const title = escapeHtml(params.title);
-    const description = escapeHtml(params.description);
-    const imageUrl = params.imageUrl;
-    const targetUrl = params.targetUrl;
-    const shortUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/${params.shortPath}`.replace(/\/$/, '')
-
-    return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${title}</title>
-  <meta name="description" content="${description}" />
-  <link rel="canonical" href="${shortUrl}" />
-  <meta http-equiv="refresh" content="0; url=${targetUrl}" />
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="${title}" />
-  <meta property="og:description" content="${description}" />
-  <meta property="og:image" content="${imageUrl}" />
-  <meta property="og:url" content="${targetUrl}" />
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${title}" />
-  <meta name="twitter:description" content="${description}" />
-  <meta name="twitter:image" content="${imageUrl}" />
-  <script>window.location.replace(${JSON.stringify(targetUrl)});</script>
-  <style>html,body{height:100%;margin:0}body{display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:#fff;color:#111}</style>
-</head>
-<body>
-  <noscript>
-    <a href="${targetUrl}">Continue to ${escapeHtml(targetUrl)}</a>
-  </noscript>
-</body>
-</html>`;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -152,25 +103,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             image: uploadResult.secure_url,
         });
         await shortLink.save();
-
-        // Write static HTML file into public/[slug]/index.html
-        try {
-            const publicDir = path.join(process.cwd(), 'public');
-            const slugDir = path.join(publicDir, slug);
-            const filePath = path.join(slugDir, 'index.html');
-            await fs.mkdir(slugDir, { recursive: true });
-            const html = buildRedirectHtml({
-                title: data.title,
-                description: data.description,
-                imageUrl: uploadResult.secure_url,
-                targetUrl: data.url,
-                shortPath: slug,
-            });
-            await fs.writeFile(filePath, html, 'utf8');
-        } catch (err) {
-            console.error('Error writing static HTML file:', err);
-            // Do not fail the whole request; return success but with a warning
-        }
 
         return NextResponse.json(
             {
