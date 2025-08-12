@@ -5,13 +5,12 @@ import Analytic from '@/models/Analytic';
 import mongoose, { ClientSession } from 'mongoose';
 import axios from 'axios';
 
-// Hàm gọi API để lấy country code từ IP
 async function getCountryCodeFromIP(): Promise<string | null> {
     try {
         const response = await axios.get('https://ipwho.is/');
         return response.data.country_code || null;
     } catch (error) {
-        console.error('Lỗi khi lấy country code:', error);
+        console.error('Error getting country code from IP:', error);
         return null;
     }
 }
@@ -63,10 +62,7 @@ type Props = {
 export default async function ShortPage({ params }: Props) {
     const { slug } = params;
 
-    // Chỉ gọi API để lấy country code
     const country = await getCountryCodeFromIP() || undefined;
-
-    // Lấy link và update analytics
     const link = await getAndIncrementShortLink(slug, country);
 
     if (!link) {
