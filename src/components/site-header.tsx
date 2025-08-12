@@ -25,7 +25,7 @@ export function SiteHeader() {
               target="_blank"
               className="dark:text-foreground"
             >
-              Support Telegram
+              Contact Support
             </Link>
           </Button>
         </div>
