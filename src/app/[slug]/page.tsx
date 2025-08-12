@@ -80,14 +80,14 @@ async function getAndIncrementShortLink(
 }
 
 type Props = {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 };
 
 /**
  * Page to handle short link redirection
  */
 export default async function ShortPage({ params }: Props) {
-    const { slug } = params;
+    const { slug } = await params;
 
     const country = await getCountryCodeFromIP() || undefined;
     const link = await getAndIncrementShortLink(slug, country);
