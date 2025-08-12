@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import connectDB from '@/lib/db';
 import ShortLink, { IShortLink } from '@/models/ShortLink';
 
@@ -52,18 +52,6 @@ export default async function ShortPage({ params }: Props) {
         notFound();
     }
 
-    return (
-        <html>
-            <head>
-                <meta httpEquiv="refresh" content={`0; url=${link.url}`} />
-            </head>
-            <body>
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `window.location.href = "${link.url}";`,
-                    }}
-                />
-            </body>
-        </html>
-    );
+    // Redirect to the target URL
+    redirect(link.url);
 }
