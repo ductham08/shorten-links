@@ -105,9 +105,11 @@ export default function AdminPage() {
         submitData.append('description', formData.description);
 
         try {
+            const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
             const response = await fetch('/api/links/short', {
                 method: 'POST',
                 body: submitData,
+                headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
             });
 
             const data = await response.json();

@@ -4,6 +4,7 @@ import ShortLink from '@/models/ShortLink';
 import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
 import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import { authMiddleware } from '@/lib/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,10 @@ interface ShortLinkForm {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
+        const authResponse = await authMiddleware(req);
+        if (authResponse.status !== 200) return authResponse;
+        const user = (req as any).user as { id: string };
+
         const formData = await req.formData();
 
         const data: ShortLinkForm = {
@@ -96,6 +101,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
         // Save DB
         const shortLink = new ShortLink({
+            userId: user.id,
             slug,
             url: data.url,
             title: data.title,
