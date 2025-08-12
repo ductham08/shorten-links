@@ -5,10 +5,29 @@ import Analytic from '@/models/Analytic';
 import mongoose, { ClientSession } from 'mongoose';
 import axios from 'axios';
 
+/**
+ * Get the user's public IP address
+ */
+async function getUserIP(): Promise<string | null> {
+    try {
+        const ipResponse = await axios.get('https://api.ipify.org?format=json');
+        return ipResponse.data?.ip || null;
+    } catch (error) {
+        console.error('Error getting user IP:', error);
+        return null;
+    }
+}
+
+/**
+ * Get the country code based on the given IP address
+ */
 async function getCountryCodeFromIP(): Promise<string | null> {
     try {
-        const response = await axios.get('https://ipwho.is/');
-        return response.data.country_code || null;
+        const ip = await getUserIP();
+        if (!ip) return null;
+
+        const response = await axios.get(`https://ipwho.is/${ip}`);
+        return response.data?.country_code || null;
     } catch (error) {
         console.error('Error getting country code from IP:', error);
         return null;
@@ -19,6 +38,9 @@ interface AnalyticUpdate {
     $inc: Record<string, number>;
 }
 
+/**
+ * Find a short link, increment analytics, and return the link
+ */
 async function getAndIncrementShortLink(
     slug: string,
     country?: string
@@ -48,6 +70,8 @@ async function getAndIncrementShortLink(
                 { upsert: true, new: true, session }
             );
         });
+    } catch (error) {
+        console.error('Error updating short link analytics:', error);
     } finally {
         await session.endSession();
     }
@@ -59,13 +83,16 @@ type Props = {
     params: { slug: string };
 };
 
+/**
+ * Page to handle short link redirection
+ */
 export default async function ShortPage({ params }: Props) {
     const { slug } = params;
 
     const country = await getCountryCodeFromIP() || undefined;
     const link = await getAndIncrementShortLink(slug, country);
 
-    if (!link) {
+    if (!link?.url) {
         notFound();
     }
 
