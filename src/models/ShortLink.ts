@@ -7,6 +7,7 @@ export interface IShortLink extends Document {
     title: string;
     description: string;
     image: string;
+    clicks: number;
 }
 
 const ShortLinkSchema: Schema = new Schema({
@@ -16,6 +17,7 @@ const ShortLinkSchema: Schema = new Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
     image: { type: String, required: true },
+    clicks: { type: Number, required: true, default: 0 },
 }, { timestamps: true });
 
 // Ensure schema updates are applied in dev/hot-reload by deleting existing model

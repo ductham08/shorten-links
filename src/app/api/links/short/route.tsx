@@ -107,6 +107,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             title: data.title,
             description: data.description,
             image: uploadResult.secure_url,
+            clicks: 0,
         });
         await shortLink.save();
 
