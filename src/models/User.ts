@@ -10,10 +10,12 @@ interface IUser extends Document {
 
 const userSchema = new Schema<IUser>({
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true },
     role: { type: String, required: true, default: "user" },
     refreshToken: { type: String },
+}, {
+    timestamps: true,
 });
 
 // Check if the model already exists before defining it
