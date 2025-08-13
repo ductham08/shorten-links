@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import Loading from './ui/loading'
+import { ModalEditLink } from './modal-edit-link'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -67,6 +68,8 @@ export function LinksTable({ className }: LinksTableProps) {
     })
     const [linkToDelete, setLinkToDelete] = useState<ShortLink | null>(null)
     const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+    const [linkToEdit, setLinkToEdit] = useState<ShortLink | null>(null)
+    const [showEditModal, setShowEditModal] = useState(false)
 
     useEffect(() => {
         fetchLinks()
@@ -364,7 +367,12 @@ export function LinksTable({ className }: LinksTableProps) {
                                                     <DropdownMenuItem onClick={() => window.open(getFullShortLink(link.slug), '_blank')}>
                                                         Open
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => {
+                                                        setLinkToEdit(link)
+                                                        setShowEditModal(true)
+                                                    }}>
+                                                        Edit
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem 
                                                         className="text-destructive"
@@ -432,6 +440,19 @@ export function LinksTable({ className }: LinksTableProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {linkToEdit && (
+                <ModalEditLink
+                    isOpen={showEditModal}
+                    onClose={() => {
+                        setShowEditModal(false)
+                        setLinkToEdit(null)
+                    }}
+                    onSuccess={fetchLinks}
+                    linkId={linkToEdit._id}
+                    currentUrl={linkToEdit.url}
+                />
+            )}
         </div>
     )
 }
