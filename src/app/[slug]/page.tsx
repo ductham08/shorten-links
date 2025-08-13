@@ -46,7 +46,8 @@ type Props = {
 export default async function ShortPage({ params }: Props) {
     const { slug } = await params;
 
-    const link = await getAndIncrementShortLink(slug);
+    await connectDB();
+    const link = await ShortLink.findOne({ slug });
 
     if (!link?.url) {
         notFound();
