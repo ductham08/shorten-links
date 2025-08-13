@@ -7,6 +7,7 @@ import { IconEdit, IconLogout } from '@tabler/icons-react';
 const InfoClient = () => {
 
     const { user, loading } = useAuth();
+    const { logout } = useAuth()
 
     return (
         <Card className='w-md flex flex-col justify-between'> 
@@ -49,6 +50,7 @@ const InfoClient = () => {
                 <Button
                     variant="outline"
                     size="sm"
+                    onClick={logout}
                 >
                     <IconLogout/> Log out
                 </Button>
