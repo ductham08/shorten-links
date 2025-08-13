@@ -1,7 +1,7 @@
 'use client';
 
 import { usePageTitle } from '@/components/contexts/page-title-context';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import React, { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import SuccessModal from '@/components/success-modal';
+import { LinksTable } from '@/components/links-table';
 
 interface FormData {
     url: string;
@@ -152,7 +153,7 @@ export default function AdminPage() {
     };
 
     return (
-        <div>
+        <div className='flex gap-6'>
             <Card>
                 <CardHeader>
                     <CardTitle>Shorten link</CardTitle>
@@ -242,6 +243,18 @@ export default function AdminPage() {
                             </div>
                         </form>
                     </div>
+                </CardContent>
+            </Card>
+
+            <Card className='w-full'>
+                <CardHeader>
+                    <CardTitle>Links</CardTitle>
+                    <CardDescription>
+                        Manage and monitor your shortened URLs
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <LinksTable />
                 </CardContent>
             </Card>
 

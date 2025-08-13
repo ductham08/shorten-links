@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import Loading from './ui/loading'
 
 interface ShortLink {
     _id: string
@@ -163,23 +164,6 @@ export function LinksTable({ className }: LinksTableProps) {
         return `${window.location.origin}/${slug}`
     }
 
-    if (loading) {
-        return (
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <div className="h-4 w-4 bg-muted rounded animate-pulse" />
-                        <div className="h-10 w-64 bg-muted rounded animate-pulse" />
-                    </div>
-                    <div className="h-10 w-20 bg-muted rounded animate-pulse" />
-                </div>
-                <div className="rounded-md border">
-                    <div className="h-64 bg-muted rounded animate-pulse" />
-                </div>
-            </div>
-        )
-    }
-
     return (
         <div className={`space-y-4 ${className}`}>
             {/* Header with filter and columns */}
@@ -201,21 +185,6 @@ export function LinksTable({ className }: LinksTableProps) {
                     >
                         Refresh
                     </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                Columns
-                                <IconChevronDown className="ml-2 h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem>URL</DropdownMenuItem>
-                            <DropdownMenuItem>Slug</DropdownMenuItem>
-                            <DropdownMenuItem>Clicks</DropdownMenuItem>
-                            <DropdownMenuItem>Created At</DropdownMenuItem>
-                            <DropdownMenuItem>Actions</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
             </div>
 
@@ -281,7 +250,15 @@ export function LinksTable({ className }: LinksTableProps) {
                             <TableHead className="w-12"></TableHead>
                         </TableRow>
                     </TableHeader>
+
                     <TableBody>
+                        {loading && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="h-24 text-center">
+                                    <Loading size="sm" />
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {filteredLinks.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">

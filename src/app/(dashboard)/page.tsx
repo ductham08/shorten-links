@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { usePageTitle } from '@/components/contexts/page-title-context';
 import { LinksTable } from '@/components/links-table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function DashboardPage() {
 
@@ -13,14 +14,18 @@ export default function DashboardPage() {
     }, [setTitle])
 
     return (
-        <div className='flex flex-col gap-6 p-6'>
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Short Links</h1>
-                <p className="text-muted-foreground">
+        <div className='flex flex-col gap-6'>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Links</CardTitle>
+                    <CardDescription>
                     Manage and monitor your shortened URLs
-                </p>
-            </div>
-            <LinksTable />
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <LinksTable />
+                </CardContent>
+            </Card>
         </div>
     );
 }
