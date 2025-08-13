@@ -131,7 +131,7 @@ export function RegisterForm({
         localStorage.setItem("accessToken", data.accessToken)
         localStorage.setItem("refreshToken", data.refreshToken)
         setTimeout(() => {
-          router.push("/dashboard")
+          router.push("/")
         }, 1000)
       } else {
         setTimeout(() => {
