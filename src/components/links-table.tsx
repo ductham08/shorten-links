@@ -23,6 +23,16 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import Loading from './ui/loading'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface ShortLink {
     _id: string
@@ -55,6 +65,8 @@ export function LinksTable({ className }: LinksTableProps) {
         total: 0,
         totalPages: 0,
     })
+    const [linkToDelete, setLinkToDelete] = useState<ShortLink | null>(null)
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 
     useEffect(() => {
         fetchLinks()
@@ -162,6 +174,41 @@ export function LinksTable({ className }: LinksTableProps) {
 
     const getFullShortLink = (slug: string) => {
         return `${window.location.origin}/${slug}`
+    }
+
+    const handleDeleteClick = (link: ShortLink) => {
+        setLinkToDelete(link)
+        setShowDeleteAlert(true)
+    }
+
+    const handleDeleteConfirm = async () => {
+        if (!linkToDelete) return
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) return;
+
+            const response = await fetch(`/api/links/delete?id=${linkToDelete._id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                toast.success('Link deleted successfully');
+                fetchLinks(); // Refresh the list
+            } else {
+                const data = await response.json();
+                toast.error(data.error || 'Failed to delete link');
+            }
+        } catch (error) {
+            console.error('Error deleting link:', error);
+            toast.error('Failed to delete link');
+        } finally {
+            setShowDeleteAlert(false)
+            setLinkToDelete(null)
+        }
     }
 
     return (
@@ -319,7 +366,10 @@ export function LinksTable({ className }: LinksTableProps) {
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>Edit</DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive">
+                                                    <DropdownMenuItem 
+                                                        className="text-destructive"
+                                                        onClick={() => handleDeleteClick(link)}
+                                                    >
                                                         Delete
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
@@ -360,6 +410,28 @@ export function LinksTable({ className }: LinksTableProps) {
                     </Button>
                 </div>
             </div>
+
+            <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to delete this link?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete the short link{' '}
+                            <span className="font-medium text-red-500">{window.location.origin}/{linkToDelete?.slug}</span> and all its data.
+                            This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteConfirm}
+                            className="bg-red-500 text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
