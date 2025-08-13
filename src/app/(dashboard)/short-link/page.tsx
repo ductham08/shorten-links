@@ -44,7 +44,7 @@ export default function AdminPage() {
     const [generatedShortUrl, setGeneratedShortUrl] = useState<string>('');
 
     useEffect(() => {
-        setTitle('Short links');
+        setTitle('Short Link');
     }, [setTitle]);
 
     const validateForm = (): boolean => {

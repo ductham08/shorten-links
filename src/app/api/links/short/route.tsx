@@ -88,7 +88,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         let uploadResult: UploadApiResponse;
         try {
             uploadResult = await cloudinary.uploader.upload(base64Image, {
-                folder: 'short-links',
+                folder: 'short-link',
                 public_id: uuidv4(),
                 resource_type: 'image',
                 overwrite: false,

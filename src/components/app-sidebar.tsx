@@ -48,8 +48,8 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Short links",
-      url: "/short-links",
+      title: "Short Link",
+      url: "/short-link",
       icon: IconUnlink,
     }
   ],
