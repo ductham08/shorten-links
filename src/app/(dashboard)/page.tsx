@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePageTitle } from '@/components/contexts/page-title-context';
 import { LinksTable } from '@/components/links-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import InfoClient from '@/components/info-client';
 
 export default function DashboardPage() {
 
@@ -14,8 +15,9 @@ export default function DashboardPage() {
     }, [setTitle])
 
     return (
-        <div className='flex flex-col gap-6'>
-            <Card>
+        <div className='flex gap-6'>
+            <InfoClient />
+            <Card className='w-full'>
                 <CardHeader>
                     <CardTitle>Links</CardTitle>
                     <CardDescription>
