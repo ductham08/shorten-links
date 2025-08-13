@@ -252,82 +252,84 @@ export function LinksTable({ className }: LinksTableProps) {
                     </TableHeader>
 
                     <TableBody>
-                        {loading && (
+                        {loading ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">
                                     <Loading size="sm" />
                                 </TableCell>
                             </TableRow>
-                        )}
-                        {filteredLinks.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
-                                    <div className="flex flex-col items-center justify-center space-y-2">
-                                        <div className="text-muted-foreground">No links found</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {filterValue ? 'Try adjusting your search terms' : 'Create your first short link to get started'}
-                                        </div>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
                         ) : (
-                            filteredLinks.map((link) => (
-                                <TableRow key={link._id}>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={selectedRows.includes(link._id)}
-                                            onCheckedChange={(checked) =>
-                                                handleSelectRow(link._id, checked as boolean)
-                                            }
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="max-w-xs">
-                                            <div className="font-medium">{link.title || 'Untitled'}</div>
+                            filteredLinks.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-24 text-center">
+                                        <div className="flex flex-col items-center justify-center space-y-2">
+                                            <div className="text-muted-foreground">No links found</div>
                                             <div className="text-sm text-muted-foreground">
-                                                {truncateUrl(link.url)}
+                                                {filterValue ? 'Try adjusting your search terms' : 'Create your first short link to get started'}
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary" className="font-mono">
-                                            {link.slug}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-center">{link.clicks}</div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="text-sm text-muted-foreground">
-                                            {formatDate(link.createdAt)}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                    <IconDots className="h-4 w-4" />
-                                                    <span className="sr-only">Open menu</span>
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => copyToClipboard(getFullShortLink(link.slug))}>
-                                                    Copy Link
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => window.open(getFullShortLink(link.slug), '_blank')}>
-                                                    Open
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-destructive">
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
                                 </TableRow>
-                            ))
+                            ) : (
+                                filteredLinks.map((link) => (
+                                    <TableRow key={link._id}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedRows.includes(link._id)}
+                                                onCheckedChange={(checked) =>
+                                                    handleSelectRow(link._id, checked as boolean)
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="max-w-xs">
+                                                <div className="font-medium">{link.title || 'Untitled'}</div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    {truncateUrl(link.url)}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary" className="font-mono">
+                                                {link.slug}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-medium text-center">{link.clicks}</div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-sm text-muted-foreground">
+                                                {formatDate(link.createdAt)}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                        <IconDots className="h-4 w-4" />
+                                                        <span className="sr-only">Open menu</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => copyToClipboard(getFullShortLink(link.slug))}>
+                                                        Copy Link
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => window.open(getFullShortLink(link.slug), '_blank')}>
+                                                        Open
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="text-destructive">
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )
                         )}
+                        
                     </TableBody>
                 </Table>
             </div>
