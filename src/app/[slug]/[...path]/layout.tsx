@@ -22,20 +22,27 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
         }
 
         return {
-            title: link.title,
-            description: link.description,
+            title: link.title || 'Redirecting...',
+            description: link.description || `Redirecting to ${link.url}`,
             openGraph: {
-                title: link.title,
-                description: link.description,
-                images: [link.image],
+                title: link.title || 'Redirecting...',
+                description: link.description || `Redirecting to ${link.url}`,
+                images: link.image ? [link.image] : [],
                 url: link.url,
                 type: 'website',
             },
             twitter: {
                 card: 'summary_large_image',
-                title: link.title,
-                description: link.description,
-                images: [link.image],
+                title: link.title || 'Redirecting...',
+                description: link.description || `Redirecting to ${link.url}`,
+                images: link.image ? [link.image] : [],
+            },
+            robots: {
+                index: false,
+                follow: true,
+            },
+            alternates: {
+                canonical: `/${slug}`,
             },
         };
     } catch (error) {
@@ -43,20 +50,14 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
         return {
             title: 'Error',
             description: 'An error occurred while loading the link.',
+            robots: {
+                index: false,
+                follow: false,
+            },
         };
     }
 }
 
-export default function SlugLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html lang="en">
-            <head>
-                <meta name="robots" content="noindex, nofollow" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            </head>
-            <body>
-                {children}
-            </body>
-        </html>
-    );
+export default function CatchAllLayout({ children }: { children: React.ReactNode }) {
+    return children;
 }
