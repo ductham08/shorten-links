@@ -19,21 +19,3 @@ export async function authMiddleware(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 }
-
-
-export async function roleMiddleware(req: NextRequest) {
-    const token = req.headers.get('authorization')?.split(' ')[1];
-    console.log(token);
-    
-    // if (!token) {
-    //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
-
-    // try {
-    //     const decoded = verifyAccessToken(token);
-    //     (req as AuthenticatedRequest).user = decoded;
-    //     return NextResponse.next();
-    // } catch {
-    //     return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    // }
-}

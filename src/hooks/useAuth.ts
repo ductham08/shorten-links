@@ -13,6 +13,7 @@ interface User {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
 
   const getCurrentUser = async (token: string): Promise<User | null> => {
@@ -80,6 +81,8 @@ export function useAuth() {
         
         if (userData) {
           setUser(userData);
+
+          setIsAdmin(userData.role === 'admin');
           setLoading(false);
         } else {
           // Không thể lấy thông tin user, xóa token và redirect
@@ -130,6 +133,7 @@ export function useAuth() {
         const userData = await getCurrentUser(data.accessToken);
         if (userData) {
           setUser(userData);
+          setIsAdmin(userData.role === 'admin');
           router.push('/');
           return { success: true };
         }
@@ -144,5 +148,5 @@ export function useAuth() {
     return { success: false, error: 'Login failed' };
   };
 
-  return { user, loading, logout, login };
+  return { user, loading, logout, login, isAdmin };
 } 
