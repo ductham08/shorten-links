@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAccessToken } from './auth';
 
 interface AuthenticatedRequest extends NextRequest {
-    user?: unknown; // hoặc bạn có thể thay unknown bằng type của decoded token
+    user?: unknown;
 }
 
 export async function authMiddleware(req: NextRequest) {
@@ -18,4 +18,22 @@ export async function authMiddleware(req: NextRequest) {
     } catch {
         return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
+}
+
+
+export async function roleMiddleware(req: NextRequest) {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    console.log(token);
+    
+    // if (!token) {
+    //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // }
+
+    // try {
+    //     const decoded = verifyAccessToken(token);
+    //     (req as AuthenticatedRequest).user = decoded;
+    //     return NextResponse.next();
+    // } catch {
+    //     return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    // }
 }
