@@ -333,7 +333,7 @@ export function LinksTable({ className }: LinksTableProps) {
                                         </TableCell>
                                         <TableCell>
                                             <div className="max-w-xs">
-                                                <div className="font-medium">{link.title || 'Untitled'}</div>
+                                                <div className="font-medium">{getFullShortLink(link.slug) || 'Untitled'}</div>
                                                 <div className="text-sm text-muted-foreground">
                                                     {truncateUrl(link.url)}
                                                 </div>
