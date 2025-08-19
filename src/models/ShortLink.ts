@@ -4,20 +4,29 @@ export interface IShortLink extends Document {
     userId: mongoose.Types.ObjectId;
     slug: string;
     url: string;
-    title: string;
-    description: string;
-    image: string;
     clicks: number;
 }
 
 const ShortLinkSchema: Schema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    slug: { type: String, required: true, unique: true },
-    url: { type: String, required: true },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    image: { type: String, required: true },
-    clicks: { type: Number, required: true, default: 0 },
+    userId: { 
+        type: Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true 
+    },
+    slug: { 
+        type: String, 
+        required: true, 
+        unique: false 
+    },
+    url: { 
+        type: String, 
+        required: true 
+    },
+    clicks: { 
+        type: Number, 
+        required: true, 
+        default: 0 
+    },
 }, { timestamps: true });
 
 // Ensure schema updates are applied in dev/hot-reload by deleting existing model
