@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import InfoClient from '@/components/info-client';
 import { useAuth } from '@/hooks/useAuth';
 import Loading from '@/components/ui/loading';
+import { AdminLinksTable } from '@/components/admin-links-table';
 
 export default function DashboardPage() {
 
@@ -24,8 +25,14 @@ export default function DashboardPage() {
             ) : isAdmin ? (
                 <Card className='w-full'>
                     <CardHeader>
-                        <CardTitle>Admin Dashboard</CardTitle>
+                        <CardTitle>Links</CardTitle>
+                        <CardDescription>
+                            Manage and monitor your shortened URLs
+                        </CardDescription>
                     </CardHeader>
+                    <CardContent>
+                        <AdminLinksTable />
+                    </CardContent>
                 </Card>
             ) : (
                 <>
