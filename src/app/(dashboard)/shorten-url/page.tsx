@@ -14,30 +14,20 @@ import { LinksTable } from '@/components/links-table';
 interface FormData {
     url: string;
     suffix: string;
-    thumbnail: File | null;
-    title: string;
-    description: string;
 }
 
 interface Errors {
     url?: string;
     suffix?: string;
-    thumbnail?: string;
-    title?: string;
-    description?: string;
-    api?: string; // Thêm để lưu lỗi từ API
+    api?: string;
 }
 
 export default function AdminPage() {
     const { setTitle } = usePageTitle();
     const [customSuffix, setCustomSuffix] = useState<boolean>(false);
-    const [autoGetMetadata, setAutoGetMetadata] = useState<boolean>(true);
     const [formData, setFormData] = useState<FormData>({
         url: '',
-        suffix: '',
-        thumbnail: null,
-        title: '',
-        description: '',
+        suffix: ''
     });
     const [errors, setErrors] = useState<Errors>({});
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -65,21 +55,6 @@ export default function AdminPage() {
             newErrors.suffix = 'Custom Suffix can only contain letters, numbers, hyphens, or underscores';
         }
 
-        // Validate Image
-        if (!formData.thumbnail) {
-            newErrors.thumbnail = 'Image is required';
-        }
-
-        // Validate Title
-        if (!formData.title) {
-            newErrors.title = 'Website Title is required';
-        }
-
-        // Validate Description
-        if (!formData.description) {
-            newErrors.description = 'Description is required';
-        }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -99,11 +74,6 @@ export default function AdminPage() {
         if (customSuffix && formData.suffix) {
             submitData.append('suffix', formData.suffix);
         }
-        if (formData.thumbnail) {
-            submitData.append('thumbnail', formData.thumbnail);
-        }
-        submitData.append('title', formData.title);
-        submitData.append('description', formData.description);
 
         try {
             const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -128,10 +98,7 @@ export default function AdminPage() {
             // Reset form after success
             setFormData({
                 url: '',
-                suffix: '',
-                thumbnail: null,
-                title: '',
-                description: '',
+                suffix: ''
             });
             setCustomSuffix(false);
             setErrors({});
@@ -148,7 +115,6 @@ export default function AdminPage() {
             ...prev,
             [id]: files ? files[0] : value,
         }));
-        // Clear error for the field, including API error
         setErrors((prev) => ({ ...prev, [id]: undefined, api: undefined }));
     };
 
@@ -177,65 +143,30 @@ export default function AdminPage() {
                                     {errors.url && <p className="text-red-500 text-sm">{errors.url}</p>}
                                 </div>
                                 <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="custom-suffix">Custom Suffix</Label>
+                                    <Label htmlFor="custom-suffix">
+                                        Custom Suffix
+                                    </Label>
                                     <Switch
                                         className="cursor-pointer"
                                         id="custom-suffix"
                                         checked={customSuffix}
                                         onClick={() => setCustomSuffix(!customSuffix)}
                                     />
+
+                                    {customSuffix && (
+                                        <>
+                                            <Input
+                                                id="suffix"
+                                                type="text"
+                                                placeholder="fanpage-ticket"
+                                                value={formData.suffix}
+                                                onChange={handleInputChange}
+                                            />
+                                            {errors.suffix && <p className="text-red-500 text-sm">{errors.suffix}</p>}
+                                        </>
+                                    )}
                                 </div>
-                                {customSuffix && (
-                                    <div className="w-md flex flex-col gap-3">
-                                        <Label htmlFor="suffix">Custom Suffix</Label>
-                                        <Input
-                                            id="suffix"
-                                            type="text"
-                                            placeholder="fanpage-ticket"
-                                            value={formData.suffix}
-                                            onChange={handleInputChange}
-                                        />
-                                        {errors.suffix && <p className="text-red-500 text-sm">{errors.suffix}</p>}
-                                    </div>
-                                )}
                                 
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="thumbnail">
-                                        <i className="text-red-500 text-[12px]">*</i>
-                                        Image
-                                    </Label>
-                                    <Input
-                                        id="thumbnail"
-                                        type="file"
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail}</p>}
-                                </div>
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="title">
-                                        <i className="text-red-500 text-[12px]">*</i>
-                                        Website Title
-                                    </Label>
-                                    <Input
-                                        id="title"
-                                        type="text"
-                                        value={formData.title}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-                                </div>
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="description">
-                                        <i className="text-red-500 text-[12px]">*</i>
-                                        Description
-                                    </Label>
-                                    <Textarea
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
-                                </div>
                                 <Button type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? 'Saving...' : 'Save'}
                                 </Button>

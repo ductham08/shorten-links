@@ -3,25 +3,14 @@ import connectDB from '@/lib/db';
 import ShortLink from '@/models/ShortLink';
 import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
-import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import { authMiddleware } from '@/lib/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Config Cloudinary (lấy từ env thay vì hardcode)
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-    api_key: process.env.CLOUDINARY_API_KEY!,
-    api_secret: process.env.CLOUDINARY_API_SECRET!,
-});
-
 interface ShortLinkForm {
     url: string;
-    title: string;
-    description: string;
     suffix?: string;
-    thumbnail: File;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -34,30 +23,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
         const data: ShortLinkForm = {
             url: formData.get('url') as string,
-            title: formData.get('title') as string,
-            description: formData.get('description') as string,
             suffix: formData.get('suffix') as string | undefined,
-            thumbnail: formData.get('thumbnail') as File,
         };
 
-        // Validate
-        if (!data.url || !data.title || !data.description) {
-            return NextResponse.json({ error: 'URL, title, and description are required' }, { status: 400 });
+        if (!data.url) {
+            return NextResponse.json({ error: 'URL is required' }, { status: 400 });
         }
         if (!validator.isURL(data.url)) {
             return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
         }
-        if (data.title.length < 3) {
-            return NextResponse.json({ error: 'Title must be at least 3 characters' }, { status: 400 });
-        }
-        if (data.description.length < 10) {
-            return NextResponse.json({ error: 'Description must be at least 10 characters' }, { status: 400 });
-        }
         if (data.suffix && !/^[a-zA-Z0-9_-]+$/.test(data.suffix)) {
             return NextResponse.json({ error: 'Custom suffix can only contain letters, numbers, hyphens, or underscores' }, { status: 400 });
-        }
-        if (!data.thumbnail) {
-            return NextResponse.json({ error: 'Image is required' }, { status: 400 });
         }
 
         // DB connect
@@ -74,48 +50,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({ error: 'Custom suffix already exists' }, { status: 409 });
         }
 
-        // Convert File to base64
-        const arrayBuffer = await data.thumbnail.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const MAX_SIZE_BYTES = 4 * 1024 * 1024;
-        if (buffer.byteLength > MAX_SIZE_BYTES) {
-            return NextResponse.json({ error: 'Image is too large (max 4MB).' }, { status: 413 });
-        }
-        const mimeType = data.thumbnail.type || 'image/jpeg';
-        const base64Image = `data:${mimeType};base64,${buffer.toString('base64')}`;
-
-        // Upload to Cloudinary
-        let uploadResult: UploadApiResponse;
-        try {
-            uploadResult = await cloudinary.uploader.upload(base64Image, {
-                folder: 'short-link',
-                public_id: uuidv4(),
-                resource_type: 'image',
-                overwrite: false,
-            });
-        } catch (error: unknown) {
-            console.error('Cloudinary upload error:', error);
-            const err = error as UploadApiErrorResponse;
-            return NextResponse.json({ error: err.message || 'Upload failed' }, { status: 502 });
-        }
-
-        // Save DB
         const shortLink = new ShortLink({
             userId: user.id,
             slug,
             url: data.url,
-            title: data.title,
-            description: data.description,
-            image: uploadResult.secure_url,
             clicks: 0,
         });
         await shortLink.save();
 
         return NextResponse.json(
             {
-                message: 'Short link created successfully',
+                message: 'Shorten link created successfully',
                 slug,
-                image: uploadResult.secure_url,
             },
             { status: 201 }
         );
