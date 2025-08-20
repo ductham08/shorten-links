@@ -8,6 +8,7 @@ import InfoClient from '@/components/info-client';
 import { useAuth } from '@/hooks/useAuth';
 import Loading from '@/components/ui/loading';
 import { AdminLinksTable } from '@/components/admin-links-table';
+import { AdminUsersTable } from '@/components/admin-users-table';
 
 export default function DashboardPage() {
 
@@ -23,17 +24,32 @@ export default function DashboardPage() {
             {loading ? (
                 <Loading fullScreen />
             ) : isAdmin ? (
-                <Card className='w-full'>
-                    <CardHeader>
-                        <CardTitle>All Links</CardTitle>
-                        <CardDescription>
-                            Manage and monitor all shortened URLs
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <AdminLinksTable />
-                    </CardContent>
-                </Card>
+                <div className='w-full flex flex-col gap-6'>
+
+                    <Card className='w-full'>
+                        <CardHeader>
+                            <CardTitle>All Users</CardTitle>
+                            <CardDescription>
+                                Manage and monitor all users
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <AdminUsersTable />
+                        </CardContent>
+                    </Card>
+
+                    <Card className='w-full'>
+                        <CardHeader>
+                            <CardTitle>All Links</CardTitle>
+                            <CardDescription>
+                                Manage and monitor all shortened URLs
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <AdminLinksTable />
+                        </CardContent>
+                    </Card>
+                </div>
             ) : (
                 <>
                     <InfoClient />
