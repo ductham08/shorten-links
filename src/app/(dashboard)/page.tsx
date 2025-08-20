@@ -25,9 +25,9 @@ export default function DashboardPage() {
             ) : isAdmin ? (
                 <Card className='w-full'>
                     <CardHeader>
-                        <CardTitle>Links</CardTitle>
+                        <CardTitle>All Links</CardTitle>
                         <CardDescription>
-                            Manage and monitor your shortened URLs
+                            Manage and monitor all shortened URLs
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

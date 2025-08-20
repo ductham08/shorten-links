@@ -434,8 +434,14 @@ export function AdminLinksTable({ className }: AdminLinksTableProps) {
 
             {/* Footer with pagination */}
             <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                    {selectedRows.length} of {filteredLinks.length} row(s) selected
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                    <div>
+                        {selectedRows.length} of {filteredLinks.length} row(s) selected
+                    </div>
+                    <div>•</div>
+                    <div>
+                        Showing {((pagination.page - 1) * pagination.pageSize) + 1} to {Math.min(pagination.page * pagination.pageSize, pagination.total)} of {pagination.total} links
+                    </div>
                 </div>
                 <div className="flex items-center space-x-6">
                     <div className="text-sm text-muted-foreground">
