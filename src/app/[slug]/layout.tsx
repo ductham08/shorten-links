@@ -1,4 +1,3 @@
-import { Metadata } from 'next';
 import connectDB from '@/lib/db';
 import ShortLink from '@/models/ShortLink';
 
@@ -7,7 +6,7 @@ interface LayoutProps {
     params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
+export async function generateMetadata({ params }: LayoutProps) {
     const { slug } = await params;
     
     try {
@@ -21,23 +20,6 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
             };
         }
 
-        return {
-            title: link.title,
-            description: link.description,
-            openGraph: {
-                title: link.title,
-                description: link.description,
-                images: [link.image],
-                url: link.url,
-                type: 'website',
-            },
-            twitter: {
-                card: 'summary_large_image',
-                title: link.title,
-                description: link.description,
-                images: [link.image],
-            },
-        };
     } catch (error) {
         console.error('Error generating metadata:', error);
         return {
