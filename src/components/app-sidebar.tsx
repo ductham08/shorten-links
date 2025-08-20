@@ -74,8 +74,8 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href="#">
-                <img src="/icons/favicon.png" className="w-[25px]" alt="" />
+              <Link href="#" className="flex items-center gap-2">
+                <img src="/icons/favicon.png" className="w-[24px]" alt="" />
                 <span className="text-base font-semibold">Shorten Url</span>
               </Link>
             </SidebarMenuButton>
