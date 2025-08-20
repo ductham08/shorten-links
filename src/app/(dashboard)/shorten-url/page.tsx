@@ -35,7 +35,7 @@ export default function AdminPage() {
     const [generatedShortUrl, setGeneratedShortUrl] = useState<string>('');
 
     useEffect(() => {
-        setTitle('Short Link');
+        setTitle('Shorten Urls');
     }, [setTitle]);
 
     const validateForm = (): boolean => {
@@ -122,7 +122,7 @@ export default function AdminPage() {
         <div className='flex gap-6'>
             <Card>
                 <CardHeader>
-                    <CardTitle>Shorten link</CardTitle>
+                    <CardTitle>Shorten Url</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="w-md">
@@ -131,12 +131,12 @@ export default function AdminPage() {
                                 <div className="w-md flex flex-col gap-3">
                                     <Label htmlFor="url">
                                         <i className="text-red-500 text-[12px]">*</i>
-                                        URL
+                                        Long URL
                                     </Label>
                                     <Input
                                         id="url"
                                         type="text"
-                                        placeholder="http://example.com/suffix"
+                                        placeholder="https://example.com/suffix"
                                         value={formData.url}
                                         onChange={handleInputChange}
                                     />
@@ -179,7 +179,7 @@ export default function AdminPage() {
 
             <Card className='w-full'>
                 <CardHeader>
-                    <CardTitle>Links</CardTitle>
+                    <CardTitle>Urls</CardTitle>
                     <CardDescription>
                         Manage and monitor your shortened URLs
                     </CardDescription>

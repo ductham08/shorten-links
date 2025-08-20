@@ -76,7 +76,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             >
               <Link href="#">
                 <img src="/icons/favicon.png" className="w-[25px]" alt="" />
-                <span className="text-base font-semibold">Crab Protect</span>
+                <span className="text-base font-semibold">Shorten Url</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

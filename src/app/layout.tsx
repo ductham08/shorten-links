@@ -15,28 +15,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Crab Protect",
-  description: "Shorten and move to your url absolutely absolutely",
+  title: "Shorten Url",
+  description: "ShortURL allows to shorten long links from Instagram, Facebook, YouTube, Twitter, Linked In, WhatsApp, TikTok, blogs and any domain name. Just paste the long URL and click the Shorten URL button. On the next page, copy the shortened URL and share it on sites, chat and emails. After shortening the URL, check how many clicks it received.",
   icons: {
     icon: '/icons/favicon.png',
   },
   openGraph: {
-    title: "Crab Protect",
-    description: "Shorten and move to your url absolutely absolutely",
+    title: "Shorten Urls, Custom Domain & Short Link Management",
+    description: "ShortURL allows to shorten long links from Instagram, Facebook, YouTube, Twitter, Linked In, WhatsApp, TikTok, blogs and any domain name. Just paste the long URL and click the Shorten URL button. On the next page, copy the shortened URL and share it on sites, chat and emails. After shortening the URL, check how many clicks it received.",
     type: "website",
     images: [
       {
         url: "/thumbnail.jpg",
         width: 1200,
         height: 630,
-        alt: "Crab Protect Thumbnail",
+        alt: "Shorten Url Thumbnail",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Crab Protect",
-    description: "Shorten and move to your url absolutely absolutely",
+    title: "Shorten Urls, Custom Domain & Short Link Management",
+    description: "ShortURL allows to shorten long links from Instagram, Facebook, YouTube, Twitter, Linked In, WhatsApp, TikTok, blogs and any domain name. Just paste the long URL and click the Shorten URL button. On the next page, copy the shortened URL and share it on sites, chat and emails. After shortening the URL, check how many clicks it received.",
     images: ["/thumbnail.jpg"],
   },
 };
