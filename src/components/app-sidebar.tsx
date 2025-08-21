@@ -2,27 +2,12 @@
 
 import * as React from "react"
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
+  IconImageInPicture,
   IconUnlink,
-  IconUsers,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -51,6 +36,11 @@ const data = {
       title: "Shorten Url",
       url: "/shorten-url",
       icon: IconUnlink,
+    },
+    {
+      title: "Branded",
+      url: "/branded",
+      icon: IconImageInPicture,
     }
   ]
 }

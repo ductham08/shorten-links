@@ -1,0 +1,191 @@
+'use client';
+
+import { usePageTitle } from '@/components/contexts/page-title-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import React, { useEffect, useState } from 'react';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import SuccessModal from '@/components/success-modal';
+import { LinksTable } from '@/components/links-table';
+
+interface FormData {
+    url: string;
+    suffix: string;
+}
+
+interface Errors {
+    url?: string;
+    suffix?: string;
+    api?: string;
+}
+
+export default function AdminPage() {
+    const { setTitle } = usePageTitle();
+    const [customSuffix, setCustomSuffix] = useState<boolean>(false);
+    const [formData, setFormData] = useState<FormData>({
+        url: '',
+        suffix: ''
+    });
+    const [errors, setErrors] = useState<Errors>({});
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+    const [generatedShortUrl, setGeneratedShortUrl] = useState<string>('');
+
+    useEffect(() => {
+        setTitle('Shorten Urls');
+    }, [setTitle]);
+
+    const validateForm = (): boolean => {
+        const newErrors: Errors = {};
+
+        // Validate URL
+        if (!formData.url) {
+            newErrors.url = 'URL is required';
+        } else if (!/^https?:\/\/[^\s/$.?#].[^\s]*$/.test(formData.url)) {
+            newErrors.url = 'Invalid URL format';
+        }
+
+        // Validate Custom Suffix if enabled
+        if (customSuffix && !formData.suffix) {
+            newErrors.suffix = 'Custom Suffix is required when enabled';
+        } else if (customSuffix && !/^[a-zA-Z0-9_-]+$/.test(formData.suffix)) {
+            newErrors.suffix = 'Custom Suffix can only contain letters, numbers, hyphens, or underscores';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        setErrors((prev) => ({ ...prev, api: undefined })); // Clear API error before submit
+
+        const submitData = new FormData();
+        submitData.append('url', formData.url);
+        if (customSuffix && formData.suffix) {
+            submitData.append('suffix', formData.suffix);
+        }
+
+        try {
+            const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+            const response = await fetch('/api/links/short', {
+                method: 'POST',
+                body: submitData,
+                headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'API request failed');
+            }
+
+            // Set the generated short URL and show success modal
+            const shortUrl = `${window.location.origin}/${data.slug || data.suffix}`;
+
+            setGeneratedShortUrl(shortUrl);
+            setShowSuccessModal(true);
+
+            // Reset form after success
+            setFormData({
+                url: '',
+                suffix: ''
+            });
+            setCustomSuffix(false);
+            setErrors({});
+        } catch (err) {
+            setErrors((prev) => ({ ...prev, api: (err as Error).message }));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { id, value, files } = e.target as HTMLInputElement;
+        setFormData((prev) => ({
+            ...prev,
+            [id]: files ? files[0] : value,
+        }));
+        setErrors((prev) => ({ ...prev, [id]: undefined, api: undefined }));
+    };
+
+    return (
+        <div className='flex gap-6'>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Shorten Url</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="w-md">
+                        <form onSubmit={handleSubmit}>
+                            <div className="flex flex-col gap-6">
+                                <div className="w-md flex flex-col gap-3">
+                                    <Label htmlFor="url">
+                                        <i className="text-red-500 text-[12px]">*</i>
+                                        Long URL
+                                    </Label>
+                                    <Input
+                                        id="url"
+                                        type="text"
+                                        placeholder="https://example.com/suffix"
+                                        value={formData.url}
+                                        onChange={handleInputChange}
+                                    />
+                                    {errors.url && <p className="text-red-500 text-sm">{errors.url}</p>}
+                                </div>
+                                <div className="w-md flex flex-col gap-3">
+                                    <Label htmlFor="custom-suffix">
+                                        Custom Suffix
+                                    </Label>
+                                    <Switch
+                                        className="cursor-pointer"
+                                        id="custom-suffix"
+                                        checked={customSuffix}
+                                        onClick={() => setCustomSuffix(!customSuffix)}
+                                    />
+
+                                    {customSuffix && (
+                                        <>
+                                            <Input
+                                                id="suffix"
+                                                type="text"
+                                                placeholder="fanpage-ticket"
+                                                value={formData.suffix}
+                                                onChange={handleInputChange}
+                                            />
+                                            {errors.suffix && <p className="text-red-500 text-sm">{errors.suffix}</p>}
+                                        </>
+                                    )}
+                                </div>
+                                
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Saving...' : 'Save'}
+                                </Button>
+                                {errors.api && <p className="text-red-500 text-sm mt-2">{errors.api}</p>}
+                            </div>
+                        </form>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Success Modal */}
+            <SuccessModal
+                isOpen={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                title="Short URL Created Successfully!"
+                url={generatedShortUrl}
+                showUrl={true}
+                showCopyButton={true}
+                showOpenButton={true}
+            />
+        </div>
+    );
+}
