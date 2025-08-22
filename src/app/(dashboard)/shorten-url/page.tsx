@@ -124,6 +124,7 @@ export default function AdminPage() {
             });
             setMetadata({});
             setCustomSuffix(false);
+            setUseIframe(false);
             setErrors({});
         } catch (err) {
             setErrors((prev) => ({ ...prev, api: (err as Error).message }));
