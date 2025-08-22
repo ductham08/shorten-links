@@ -190,7 +190,6 @@ export default function AdminPage() {
                 }
             } else {
                 setMetadata({});
-                // Reset metadata in formData when URL is empty or invalid
                 setFormData(prev => ({
                     ...prev,
                     title: '',
@@ -247,6 +246,7 @@ export default function AdminPage() {
                                                         Use Iframe
                                                     </Label>
                                                     <Switch
+                                                        disabled={true}
                                                         className="cursor-pointer"
                                                         id="use-iframe"
                                                         checked={useIframe}
