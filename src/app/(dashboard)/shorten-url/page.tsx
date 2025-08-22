@@ -31,6 +31,7 @@ interface Errors {
 export default function AdminPage() {
     const { setTitle } = usePageTitle();
     const [customSuffix, setCustomSuffix] = useState<boolean>(false);
+    const [useIframe, setUseIframe] = useState<boolean>(false);
     const [formData, setFormData] = useState<FormData>({
         url: '',
         suffix: '',
@@ -90,7 +91,7 @@ export default function AdminPage() {
         submitData.append('title', formData.title);
         submitData.append('description', formData.description);
         submitData.append('image', formData.image);
-        submitData.append('isIframe', String(formData.isIframe));
+        submitData.append('isIframe', String(useIframe));
 
         try {
             const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -213,16 +214,31 @@ export default function AdminPage() {
                                             />
                                             {errors.url && <p className="text-red-500 text-sm">{errors.url}</p>}
                                         </div>
-                                        <div className="w-md flex flex-col gap-3">
-                                            <Label htmlFor="custom-suffix">
-                                                Custom Suffix
-                                            </Label>
-                                            <Switch
-                                                className="cursor-pointer"
-                                                id="custom-suffix"
-                                                checked={customSuffix}
-                                                onClick={() => setCustomSuffix(!customSuffix)}
-                                            />
+                                        <div className="w-full flex flex-col gap-3">
+                                            <div className='flex gap-8 items-center justify-start'>
+                                                <div className='flex gap-2 flex-col'>
+                                                    <Label htmlFor="custom-suffix">
+                                                        Custom Suffix
+                                                    </Label>
+                                                    <Switch
+                                                        className="cursor-pointer"
+                                                        id="custom-suffix"
+                                                        checked={customSuffix}
+                                                        onClick={() => setCustomSuffix(!customSuffix)}
+                                                    />
+                                                </div>
+                                                <div className='flex gap-2 flex-col'>
+                                                    <Label htmlFor="use-iframe">
+                                                        Use Iframe
+                                                    </Label>
+                                                    <Switch
+                                                        className="cursor-pointer"
+                                                        id="use-iframe"
+                                                        checked={useIframe}
+                                                        onClick={() => setUseIframe(!useIframe)}
+                                                    />
+                                                </div>
+                                            </div>
 
                                             {customSuffix && (
                                                 <>
