@@ -14,6 +14,10 @@ import { LinksTable } from '@/components/links-table';
 interface FormData {
     url: string;
     suffix: string;
+    title: string;
+    description: string;
+    image: string;
+    isIframe: boolean;
 }
 
 interface Errors {
@@ -27,7 +31,11 @@ export default function AdminPage() {
     const [customSuffix, setCustomSuffix] = useState<boolean>(false);
     const [formData, setFormData] = useState<FormData>({
         url: '',
-        suffix: ''
+        suffix: '',
+        title: '',
+        description: '',
+        image: '',
+        isIframe: false
     });
     const [errors, setErrors] = useState<Errors>({});
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -98,7 +106,11 @@ export default function AdminPage() {
             // Reset form after success
             setFormData({
                 url: '',
-                suffix: ''
+                suffix: '',
+                title: '',
+                description: '',
+                image: '',
+                isIframe: false
             });
             setCustomSuffix(false);
             setErrors({});

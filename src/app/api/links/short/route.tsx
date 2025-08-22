@@ -11,6 +11,10 @@ export const dynamic = 'force-dynamic';
 interface ShortLinkForm {
     url: string;
     suffix?: string;
+    title?: string;
+    description?: string;
+    image?: string;
+    isIframe?: boolean;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -24,6 +28,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const data: ShortLinkForm = {
             url: formData.get('url') as string,
             suffix: formData.get('suffix') as string | undefined,
+            title: formData.get('title') as string | undefined,
+            description: formData.get('description') as string | undefined,
+            image: formData.get('image') as string | undefined,
+            isIframe: formData.get('isIframe') as unknown as boolean | undefined,
         };
 
         if (!data.url) {
@@ -55,7 +63,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             slug,
             url: data.url,
             clicks: 0,
+            title: data.title || '',
+            description: data.description || '',
+            image: data.image || '',
+            isIframe: data.isIframe || false,
         });
+
         await shortLink.save();
 
         return NextResponse.json(
