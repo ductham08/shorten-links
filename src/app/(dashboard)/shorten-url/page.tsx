@@ -16,6 +16,8 @@ import { LinkPreview } from '@/components/ui/link-preview';
 interface FormData {
     url: string;
     suffix: string;
+    icon: string;
+    siteName: string;
     title: string;
     description: string;
     image: string;
@@ -35,6 +37,8 @@ export default function AdminPage() {
     const [formData, setFormData] = useState<FormData>({
         url: '',
         suffix: '',
+        icon: '',
+        siteName: '',
         title: '',
         description: '',
         image: '',
@@ -91,6 +95,8 @@ export default function AdminPage() {
         submitData.append('title', formData.title);
         submitData.append('description', formData.description);
         submitData.append('image', formData.image);
+        submitData.append('icon', formData.icon);
+        submitData.append('siteName', formData.siteName);
         submitData.append('isIframe', String(useIframe));
 
         try {
@@ -117,6 +123,8 @@ export default function AdminPage() {
             setFormData({
                 url: '',
                 suffix: '',
+                icon: '',
+                siteName: '',
                 title: '',
                 description: '',
                 image: '',
@@ -161,7 +169,9 @@ export default function AdminPage() {
                         ...prev,
                         title: urlMetadata.title || 'No title',
                         description: urlMetadata.description || 'No description',
-                        image: urlMetadata.image || '/file.svg'
+                        image: urlMetadata.image || '/file.svg',
+                        icon: urlMetadata.icon || '',
+                        siteName: urlMetadata.siteName || ''
                     }));
                 } catch (error) {
                     console.error('Error fetching metadata:', error);
@@ -171,7 +181,9 @@ export default function AdminPage() {
                         ...prev,
                         title: '',
                         description: '',
-                        image: ''
+                        image: '',
+                        icon: '',
+                        siteName: ''
                     }));
                 } finally {
                     setIsLoadingMetadata(false);
@@ -183,7 +195,9 @@ export default function AdminPage() {
                     ...prev,
                     title: '',
                     description: '',
-                    image: ''
+                    image: '',
+                    icon: '',
+                    siteName: ''
                 }));
             }
         }

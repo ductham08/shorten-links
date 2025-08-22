@@ -5,6 +5,8 @@ export interface IShortLink extends Document {
     slug: string;
     url: string;
     clicks: number;
+    icon: string;
+    siteName: string;
     title: string;
     description: string;
     image: string;
@@ -30,6 +32,14 @@ const ShortLinkSchema: Schema = new Schema({
         type: Number, 
         required: true, 
         default: 0 
+    },
+    icon: {
+        type: String,
+        required: true
+    },
+    siteName: {
+        type: String,
+        required: true
     },
     title: {
         type: String,

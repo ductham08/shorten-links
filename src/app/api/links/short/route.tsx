@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic';
 interface ShortLinkForm {
     url: string;
     suffix?: string;
+    icon?: string;
+    siteName?: string;
     title?: string;
     description?: string;
     image?: string;
@@ -28,6 +30,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const data: ShortLinkForm = {
             url: formData.get('url') as string,
             suffix: formData.get('suffix') as string | undefined,
+            icon: formData.get('icon') as string | undefined,
+            siteName: formData.get('siteName') as string | undefined,
             title: formData.get('title') as string | undefined,
             description: formData.get('description') as string | undefined,
             image: formData.get('image') as string | undefined,
@@ -63,6 +67,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             slug,
             url: data.url,
             clicks: 0,
+            icon: data.icon || '',
+            siteName: data.siteName || '',
             title: data.title || '',
             description: data.description || '',
             image: data.image || '',

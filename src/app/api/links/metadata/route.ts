@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import getMetadata from 'metadata-scraper';
+import { MetaData } from 'metadata-scraper/lib/types';
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,12 +15,26 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const metadata = await getMetadata(url);
+        const metadata = await getMetadata(url) as any;
+
+        const icons = [
+            metadata.favicon,
+            metadata.icon,
+            ...(metadata.icons || []),
+            `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
+        ].filter(Boolean);
+
+        const siteName = metadata.siteName || metadata.og?.siteName || urlObj.hostname;
+        const title = metadata.title || metadata.og?.title || metadata.twitter?.title;
+        const description = metadata.description || metadata.og?.description || metadata.twitter?.description;
+        const image = metadata.image || metadata.og?.image || metadata.twitter?.image;
 
         return NextResponse.json({
-            title: metadata.title || metadata.og?.title || metadata.twitter?.title,
-            description: metadata.description || metadata.og?.description || metadata.twitter?.description,
-            image: metadata.image || metadata.og?.image || metadata.twitter?.image
+            title: title,
+            description: description,
+            image: image,
+            icon: icons[0], // Use first available icon
+            siteName: siteName
         });
     } catch (error) {
         console.error('Error fetching metadata:', error);
