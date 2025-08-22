@@ -10,6 +10,8 @@ import { Switch } from '@/components/ui/switch';
 import SuccessModal from '@/components/success-modal';
 import { LinksTable } from '@/components/links-table';
 import { LinkPreview } from '@/components/ui/link-preview';
+import { fetchUrlMetadata } from '@/lib/utils';
+import { Metadata } from '@/types';
 
 interface FormData {
     url: string;
@@ -33,6 +35,8 @@ export default function AdminPage() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
     const [generatedShortUrl, setGeneratedShortUrl] = useState<string>('');
+    const [metadata, setMetadata] = useState<Metadata>({});
+    const [isLoadingMetadata, setIsLoadingMetadata] = useState<boolean>(false);
 
     useEffect(() => {
         setTitle('Shorten Urls');
@@ -109,13 +113,39 @@ export default function AdminPage() {
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const isValidUrl = (url: string): boolean => {
+        try {
+            const urlObj = new URL(url);
+            return ['http:', 'https:'].includes(urlObj.protocol);
+        } catch {
+            return false;
+        }
+    };
+
+    const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value, files } = e.target as HTMLInputElement;
         setFormData((prev) => ({
             ...prev,
             [id]: files ? files[0] : value,
         }));
         setErrors((prev) => ({ ...prev, [id]: undefined, api: undefined }));
+
+        if (id === 'url') {
+            if (value && isValidUrl(value)) {
+                setIsLoadingMetadata(true);
+                try {
+                    const urlMetadata = await fetchUrlMetadata(value);
+                    setMetadata(urlMetadata);
+                } catch (error) {
+                    console.error('Error fetching metadata:', error);
+                    setMetadata({}); // Reset metadata on error
+                } finally {
+                    setIsLoadingMetadata(false);
+                }
+            } else {
+                setMetadata({});
+            }
+        }
     };
 
     return (
@@ -178,9 +208,10 @@ export default function AdminPage() {
             </Card>
 
             <LinkPreview
-                // title="Example Title"
-                // description="This is a description of the link"
-                // image="https://ui.shadcn.com/placeholder.svg"
+                title={metadata.title}
+                description={metadata.description}
+                image={metadata.image}
+                isLoading={isLoadingMetadata}
             />
 
             {/* Success Modal */}

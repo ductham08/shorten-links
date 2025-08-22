@@ -37,6 +37,7 @@
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.525.0",
+    "metadata-scraper": "^0.2.61",
     "mongoose": "^8.16.3",
     "next": "15.4.1",
     "next-auth": "^4.24.11",
