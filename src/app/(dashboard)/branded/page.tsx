@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import SuccessModal from '@/components/success-modal';
 import { LinksTable } from '@/components/links-table';
+import { LinkPreview } from '@/components/ui/link-preview';
 
 interface FormData {
     url: string;
@@ -175,6 +176,12 @@ export default function AdminPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <LinkPreview
+                // title="Example Title"
+                // description="This is a description of the link"
+                // image="https://ui.shadcn.com/placeholder.svg"
+            />
 
             {/* Success Modal */}
             <SuccessModal

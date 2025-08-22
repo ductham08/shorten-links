@@ -37,11 +37,11 @@ const data = {
       url: "/shorten-url",
       icon: IconUnlink,
     },
-    {
-      title: "Branded",
-      url: "/branded",
-      icon: IconImageInPicture,
-    }
+    // {
+    //   title: "Branded",
+    //   url: "/branded",
+    //   icon: IconImageInPicture,
+    // }
   ]
 }
 
