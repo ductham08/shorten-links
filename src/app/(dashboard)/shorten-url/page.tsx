@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import React, { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import SuccessModal from '@/components/success-modal';
 import { LinksTable } from '@/components/links-table';
+import { Metadata } from '@/types';
+import { fetchUrlMetadata } from '@/lib/utils';
+import { LinkPreview } from '@/components/ui/link-preview';
 
 interface FormData {
     url: string;
@@ -41,6 +43,8 @@ export default function AdminPage() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
     const [generatedShortUrl, setGeneratedShortUrl] = useState<string>('');
+    const [metadata, setMetadata] = useState<Metadata>({});
+    const [isLoadingMetadata, setIsLoadingMetadata] = useState<boolean>(false);
 
     useEffect(() => {
         setTitle('Shorten Urls');
@@ -82,6 +86,11 @@ export default function AdminPage() {
         if (customSuffix && formData.suffix) {
             submitData.append('suffix', formData.suffix);
         }
+        // Add metadata to form data
+        submitData.append('title', formData.title);
+        submitData.append('description', formData.description);
+        submitData.append('image', formData.image);
+        submitData.append('isIframe', String(formData.isIframe));
 
         try {
             const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -103,7 +112,7 @@ export default function AdminPage() {
             setGeneratedShortUrl(shortUrl);
             setShowSuccessModal(true);
 
-            // Reset form after success
+            // Reset form and metadata after success
             setFormData({
                 url: '',
                 suffix: '',
@@ -112,6 +121,7 @@ export default function AdminPage() {
                 image: '',
                 isIframe: false
             });
+            setMetadata({});
             setCustomSuffix(false);
             setErrors({});
         } catch (err) {
@@ -121,96 +131,156 @@ export default function AdminPage() {
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const isValidUrl = (url: string): boolean => {
+        try {
+            const urlObj = new URL(url);
+            return ['http:', 'https:'].includes(urlObj.protocol);
+        } catch {
+            return false;
+        }
+    };
+
+    const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value, files } = e.target as HTMLInputElement;
         setFormData((prev) => ({
             ...prev,
             [id]: files ? files[0] : value,
         }));
         setErrors((prev) => ({ ...prev, [id]: undefined, api: undefined }));
+
+        if (id === 'url') {
+            if (value && isValidUrl(value)) {
+                setIsLoadingMetadata(true);
+                try {
+                    const urlMetadata = await fetchUrlMetadata(value);
+                    setMetadata(urlMetadata);
+                    // Update formData with metadata
+                    setFormData(prev => ({
+                        ...prev,
+                        title: urlMetadata.title || 'No title',
+                        description: urlMetadata.description || 'No description',
+                        image: urlMetadata.image || '/file.svg'
+                    }));
+                } catch (error) {
+                    console.error('Error fetching metadata:', error);
+                    setMetadata({});
+                    // Reset metadata in formData
+                    setFormData(prev => ({
+                        ...prev,
+                        title: '',
+                        description: '',
+                        image: ''
+                    }));
+                } finally {
+                    setIsLoadingMetadata(false);
+                }
+            } else {
+                setMetadata({});
+                // Reset metadata in formData when URL is empty or invalid
+                setFormData(prev => ({
+                    ...prev,
+                    title: '',
+                    description: '',
+                    image: ''
+                }));
+            }
+        }
     };
 
     return (
-        <div className='flex gap-6'>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Shorten Url</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="w-md">
-                        <form onSubmit={handleSubmit}>
-                            <div className="flex flex-col gap-6">
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="url">
-                                        <i className="text-red-500 text-[12px]">*</i>
-                                        Long URL
-                                    </Label>
-                                    <Input
-                                        id="url"
-                                        type="text"
-                                        placeholder="https://example.com/suffix"
-                                        value={formData.url}
-                                        onChange={handleInputChange}
-                                    />
-                                    {errors.url && <p className="text-red-500 text-sm">{errors.url}</p>}
-                                </div>
-                                <div className="w-md flex flex-col gap-3">
-                                    <Label htmlFor="custom-suffix">
-                                        Custom Suffix
-                                    </Label>
-                                    <Switch
-                                        className="cursor-pointer"
-                                        id="custom-suffix"
-                                        checked={customSuffix}
-                                        onClick={() => setCustomSuffix(!customSuffix)}
-                                    />
-
-                                    {customSuffix && (
-                                        <>
+        <>
+            <div className='flex gap-6 flex-col'>
+                <div className='flex gap-6'>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Shorten Url</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="w-md">
+                                <form onSubmit={handleSubmit}>
+                                    <div className="flex flex-col gap-6">
+                                        <div className="w-md flex flex-col gap-3">
+                                            <Label htmlFor="url">
+                                                <i className="text-red-500 text-[12px]">*</i>
+                                                Long URL
+                                            </Label>
                                             <Input
-                                                id="suffix"
+                                                id="url"
                                                 type="text"
-                                                placeholder="fanpage-ticket"
-                                                value={formData.suffix}
+                                                placeholder="https://example.com/suffix"
+                                                value={formData.url}
                                                 onChange={handleInputChange}
                                             />
-                                            {errors.suffix && <p className="text-red-500 text-sm">{errors.suffix}</p>}
-                                        </>
-                                    )}
-                                </div>
-                                
-                                <Button type="submit" disabled={isSubmitting}>
-                                    {isSubmitting ? 'Saving...' : 'Save'}
-                                </Button>
-                                {errors.api && <p className="text-red-500 text-sm mt-2">{errors.api}</p>}
+                                            {errors.url && <p className="text-red-500 text-sm">{errors.url}</p>}
+                                        </div>
+                                        <div className="w-md flex flex-col gap-3">
+                                            <Label htmlFor="custom-suffix">
+                                                Custom Suffix
+                                            </Label>
+                                            <Switch
+                                                className="cursor-pointer"
+                                                id="custom-suffix"
+                                                checked={customSuffix}
+                                                onClick={() => setCustomSuffix(!customSuffix)}
+                                            />
+
+                                            {customSuffix && (
+                                                <>
+                                                    <Input
+                                                        id="suffix"
+                                                        type="text"
+                                                        placeholder="fanpage-ticket"
+                                                        value={formData.suffix}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                    {errors.suffix && <p className="text-red-500 text-sm">{errors.suffix}</p>}
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <Button type="submit" disabled={isSubmitting}>
+                                            {isSubmitting ? 'Saving...' : 'Save'}
+                                        </Button>
+                                        {errors.api && <p className="text-red-500 text-sm mt-2">{errors.api}</p>}
+                                    </div>
+                                </form>
                             </div>
-                        </form>
-                    </div>
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
 
-            <Card className='w-full'>
-                <CardHeader>
-                    <CardTitle>Urls</CardTitle>
-                    <CardDescription>
-                        Manage and monitor your shortened URLs
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <LinksTable />
-                </CardContent>
-            </Card>
+                    <LinkPreview
+                        title={metadata.title}
+                        description={metadata.description}
+                        image={metadata.image}
+                        isLoading={isLoadingMetadata}
+                    />
 
-            {/* Success Modal */}
-            <SuccessModal
-                isOpen={showSuccessModal}
-                onClose={() => setShowSuccessModal(false)}
-                title="Short URL Created Successfully!"
-                url={generatedShortUrl}
-                showUrl={true}
-                showCopyButton={true}
-                showOpenButton={true}
-            />
-        </div>
+                    {/* Success Modal */}
+                    <SuccessModal
+                        isOpen={showSuccessModal}
+                        onClose={() => setShowSuccessModal(false)}
+                        title="Short URL Created Successfully!"
+                        url={generatedShortUrl}
+                        showUrl={true}
+                        showCopyButton={true}
+                        showOpenButton={true}
+                    />
+                </div>
+
+                <div className='w-full'>
+                    <Card className='w-full'>
+                        <CardHeader>
+                            <CardTitle>Urls</CardTitle>
+                            <CardDescription>
+                                Manage and monitor your shortened URLs
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <LinksTable />
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </>
     );
 }
