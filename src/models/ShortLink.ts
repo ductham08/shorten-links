@@ -5,6 +5,10 @@ export interface IShortLink extends Document {
     slug: string;
     url: string;
     clicks: number;
+    title: string;
+    description: string;
+    image: string;
+    isIframe: boolean;
 }
 
 const ShortLinkSchema: Schema = new Schema({
@@ -27,6 +31,23 @@ const ShortLinkSchema: Schema = new Schema({
         required: true, 
         default: 0 
     },
+    title: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    image: {
+        type: String,
+        required: true
+    },
+    isIframe: {
+        type: Boolean,
+        required: true,
+        default: false
+    }
 }, { timestamps: true });
 
 // Ensure schema updates are applied in dev/hot-reload by deleting existing model
