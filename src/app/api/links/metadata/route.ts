@@ -16,15 +16,14 @@ export async function POST(req: NextRequest) {
         }
 
         const metadata = await getMetadata(url) as any;
-
+        
         const icons = [
             metadata.favicon,
             metadata.icon,
             ...(metadata.icons || []),
-            `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=128`
         ].filter(Boolean);
 
-        const siteName = metadata.siteName || metadata.og?.siteName || urlObj.hostname;
+        const siteName = metadata.siteName || metadata.og?.siteName || '';
         const title = metadata.title || metadata.og?.title || metadata.twitter?.title;
         const description = metadata.description || metadata.og?.description || metadata.twitter?.description;
         const image = metadata.image || metadata.og?.image || metadata.twitter?.image;

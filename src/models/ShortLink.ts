@@ -21,7 +21,7 @@ const ShortLinkSchema: Schema = new Schema({
     },
     slug: { 
         type: String, 
-        required: true, 
+        required: false, 
         unique: false 
     },
     url: { 
@@ -35,27 +35,27 @@ const ShortLinkSchema: Schema = new Schema({
     },
     icon: {
         type: String,
-        required: true
+        required: false
     },
     siteName: {
         type: String,
-        required: true
+        required: false
     },
     title: {
         type: String,
-        required: true
+        required: false
     },
     description: {
         type: String,
-        required: true
+        required: false
     },
     image: {
         type: String,
-        required: true
+        required: false
     },
     isIframe: {
         type: Boolean,
-        required: true,
+        required: false,
         default: false
     }
 }, { timestamps: true });
