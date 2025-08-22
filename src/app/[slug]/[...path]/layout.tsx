@@ -27,7 +27,10 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
         // Only return metadata if isIframe is true
         if (link.isIframe) {
             return {
-                title: link.title,
+                icons: {
+                    icon: link.icon,
+                },
+                title: link.siteName ? link.siteName : link.title,
                 description: link.description,
                 robots: 'noindex, nofollow',
                 viewport: 'width=device-width, initial-scale=1.0',
