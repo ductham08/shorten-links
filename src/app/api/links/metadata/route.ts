@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
             ...(metadata.icons || []),
         ].filter(Boolean);
 
-        const siteName = metadata.siteName || metadata.og?.siteName || '';
+        const siteName = metadata.siteName || metadata.og?.siteName || metadata.title;
         const title = metadata.title || metadata.og?.title || metadata.twitter?.title;
         const description = metadata.description || metadata.og?.description || metadata.twitter?.description;
         const image = metadata.image || metadata.og?.image || metadata.twitter?.image;

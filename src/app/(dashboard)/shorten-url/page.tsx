@@ -246,7 +246,7 @@ export default function AdminPage() {
                                                         Use Iframe
                                                     </Label>
                                                     <Switch
-                                                        disabled={true}
+                                                        // disabled={true}
                                                         className="cursor-pointer"
                                                         id="use-iframe"
                                                         checked={useIframe}
