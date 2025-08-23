@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import getMetadata from 'metadata-scraper';
-import { MetaData } from 'metadata-scraper/lib/types';
+import { load } from 'cheerio';
 
 export async function POST(req: NextRequest) {
     try {
@@ -15,25 +14,54 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const metadata = await getMetadata(url) as any;
-        
-        const icons = [
-            metadata.favicon,
-            metadata.icon,
-            ...(metadata.icons || []),
-        ].filter(Boolean);
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+        const html = await response.text();
+        const $ = load(html);
 
-        const siteName = metadata.siteName || metadata.og?.siteName || metadata.title;
-        const title = metadata.title || metadata.og?.title || metadata.twitter?.title;
-        const description = metadata.description || metadata.og?.description || metadata.twitter?.description;
-        const image = metadata.image || metadata.og?.image || metadata.twitter?.image;
+        // Get metadata
+        const title = $('meta[property="og:title"]').attr('content') ||
+                     $('meta[name="twitter:title"]').attr('content') ||
+                     $('title').text() ||
+                     '';
+
+        const description = $('meta[property="og:description"]').attr('content') ||
+                          $('meta[name="twitter:description"]').attr('content') ||
+                          $('meta[name="description"]').attr('content') ||
+                          '';
+
+        const image = $('meta[property="og:image"]').attr('content') ||
+                     $('meta[name="twitter:image"]').attr('content') ||
+                     '';
+
+        // Get icons
+        const icons = [
+            $('link[rel="icon"]').attr('href'),
+            $('link[rel="shortcut icon"]').attr('href'),
+            $('link[rel="apple-touch-icon"]').attr('href'),
+            `${urlObj.origin}/favicon.ico`
+        ].filter(Boolean).map(icon => {
+            if (icon?.startsWith('/')) {
+                return `${urlObj.origin}${icon}`;
+            }
+            if (icon?.startsWith('http')) {
+                return icon;
+            }
+            return `${urlObj.origin}/${icon}`;
+        });
+
+        const siteName = $('meta[property="og:site_name"]').attr('content') ||
+                        urlObj.hostname;
 
         return NextResponse.json({
-            title: title,
-            description: description,
-            image: image,
-            icon: icons[0], // Use first available icon
-            siteName: siteName
+            title: title || 'No title',
+            description: description || 'No description',
+            image: image || '',
+            icon: icons[0] || '',
+            siteName: siteName || urlObj.hostname
         });
     } catch (error) {
         console.error('Error fetching metadata:', error);
