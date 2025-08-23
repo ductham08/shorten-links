@@ -53,15 +53,14 @@ export async function POST(req: NextRequest) {
             return `${urlObj.origin}/${icon}`;
         });
 
-        const siteName = $('meta[property="og:site_name"]').attr('content') ||
-                        urlObj.hostname;
+        const siteName = $('title').text();
 
         return NextResponse.json({
-            title: title || 'No title',
+            title: title || siteName,
             description: description || 'No description',
             image: image || '',
             icon: icons[0] || '',
-            siteName: siteName || urlObj.hostname
+            siteName: siteName || title
         });
     } catch (error) {
         console.error('Error fetching metadata:', error);
