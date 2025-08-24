@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import connectDB from '@/lib/db';
 import ShortLink from '@/models/ShortLink';
-import SlugLayout from '@/components/slug-layout';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -68,5 +67,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return <SlugLayout>{children}</SlugLayout>;
+    return <div className="min-h-screen h-full w-full">
+        {children}
+    </div>;
 }

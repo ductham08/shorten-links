@@ -12,6 +12,7 @@ import { LinksTable } from '@/components/links-table';
 import { Metadata } from '@/types';
 import { fetchUrlMetadata } from '@/lib/utils';
 import { LinkPreview } from '@/components/ui/link-preview';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FormData {
     url: string;
@@ -31,6 +32,12 @@ interface Errors {
 }
 
 export default function AdminPage() {
+
+    const { user } = useAuth();
+
+    console.log(user);
+    
+
     const { setTitle } = usePageTitle();
     const [customSuffix, setCustomSuffix] = useState<boolean>(false);
     const [useIframe, setUseIframe] = useState<boolean>(false);
@@ -246,7 +253,7 @@ export default function AdminPage() {
                                                         Use Iframe
                                                     </Label>
                                                     <Switch
-                                                        disabled={true}
+                                                        disabled={user?.role !== 'admin'}
                                                         className="cursor-pointer"
                                                         id="use-iframe"
                                                         checked={useIframe}
