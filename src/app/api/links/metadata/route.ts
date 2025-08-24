@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
         const image = $('meta[property="og:image"]').attr('content') ||
                      $('meta[name="twitter:image"]').attr('content') ||
-                     '';
+                     null;
 
         // Get icons
         const icons = [

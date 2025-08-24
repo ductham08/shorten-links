@@ -67,7 +67,5 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return <div className="min-h-screen h-full w-full">
-        {children}
-    </div>;
+    return <div>{children}</div>;
 }
