@@ -170,16 +170,21 @@ export default function AdminPage() {
                 setIsLoadingMetadata(true);
                 try {
                     const urlMetadata = await fetchUrlMetadata(value);
-                    setMetadata(urlMetadata);
-                    // Update formData with metadata
-                    setFormData(prev => ({
-                        ...prev,
-                        title: urlMetadata.title || 'No title',
-                        description: urlMetadata.description || 'No description',
-                        image: urlMetadata.image || '/file.svg',
-                        icon: urlMetadata.icon || '',
-                        siteName: urlMetadata.siteName || ''
-                    }));
+
+                    console.log(urlMetadata);
+
+                    // if (urlMetadata.success) {
+                    
+                    // // setMetadata(urlMetadata);
+                    // // // Update formData with metadata
+                    // // setFormData(prev => ({
+                    // //     ...prev,
+                    // //     title: urlMetadata.title || 'No title',
+                    // //     description: urlMetadata.description || 'No description',
+                    // //     image: urlMetadata.image || '/file.svg',
+                    // //     icon: urlMetadata.icon || '',
+                    // //     siteName: urlMetadata.siteName || ''
+                    // // }));
                 } catch (error) {
                     console.error('Error fetching metadata:', error);
                     setMetadata({});

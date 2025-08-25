@@ -29,24 +29,54 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Function to perform fetch with retry logic
+        const fetchWithRetry = async (url: string, maxRetries = 3, retryDelay = 1000) => {
+            const userAgents = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15',
+                'Mozilla/5.0 (X11; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0'
+            ];
+
+            let lastError: Error | null = null;
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        headers: {
+                            'User-Agent': userAgents[attempt % userAgents.length],
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.5',
+                            'Accept-Encoding': 'gzip, deflate, br',
+                            'Connection': 'keep-alive',
+                            'Referer': urlObj.origin
+                        },
+                        redirect: 'follow',
+                        signal: AbortSignal.timeout(15000) // 15s timeout
+                    });
+
+                    if (response.ok) {
+                        return response;
+                    }
+
+                    lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    if (response.status === 429 || response.status >= 500) {
+                        // Retry on rate limit or server errors
+                        await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+                        continue;
+                    }
+                    throw lastError;
+                } catch (error) {
+                    lastError = error instanceof Error ? error : new Error('Unknown fetch error');
+                    if (attempt < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+                    }
+                }
+            }
+            throw lastError || new Error('Failed to fetch after retries');
+        };
+
         // Fetch website content
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5'
-            },
-            redirect: 'follow',
-            signal: AbortSignal.timeout(10000) // 10s timeout
-        });
-
-        if (!response.ok) {
-            return NextResponse.json(
-                { error: `Failed to fetch website: HTTP ${response.status}` },
-                { status: response.status }
-            );
-        }
-
+        const response = await fetchWithRetry(url);
         const html = await response.text();
         const $ = load(html);
 
@@ -58,7 +88,7 @@ export async function POST(req: NextRequest) {
             return text?.trim().replace(/\s+/g, ' ') || '';
         };
 
-        // Extract standard meta tags
+        // Extract all meta tags
         $('meta').each((_, element) => {
             const name = $(element).attr('name') || $(element).attr('property') || $(element).attr('itemprop');
             const content = $(element).attr('content');
@@ -67,10 +97,11 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        // Extract specific metadata
+        // Extract specific metadata with fallbacks for social media
         metadata['title'] = cleanText(
             $('meta[property="og:title"]').attr('content') ||
             $('meta[name="twitter:title"]').attr('content') ||
+            $('meta[name="title"]').attr('content') ||
             $('title').text() ||
             ''
         );
@@ -85,6 +116,7 @@ export async function POST(req: NextRequest) {
         metadata['image'] = cleanText(
             $('meta[property="og:image"]').attr('content') ||
             $('meta[name="twitter:image"]').attr('content') ||
+            $('meta[property="og:image:secure_url"]').attr('content') ||
             ''
         );
 
@@ -94,6 +126,12 @@ export async function POST(req: NextRequest) {
             $('title').text() ||
             ''
         );
+
+        // Extract social media specific metadata
+        metadata['twitter:card'] = cleanText($('meta[name="twitter:card"]').attr('content') || '');
+        metadata['twitter:creator'] = cleanText($('meta[name="twitter:creator"]').attr('content') || '');
+        metadata['fb:app_id'] = cleanText($('meta[property="fb:app_id"]').attr('content') || '');
+        metadata['og:type'] = cleanText($('meta[property="og:type"]').attr('content') || '');
 
         // Extract icons
         const icons: string[] = [];
@@ -173,6 +211,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json(
                 { error: 'Request timed out' },
                 { status: 504 }
+            );
+        }
+        if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+            return NextResponse.json(
+                { error: 'Access forbidden by the server. This may be due to bot detection or restricted access.' },
+                { status: 403 }
             );
         }
         return NextResponse.json(
